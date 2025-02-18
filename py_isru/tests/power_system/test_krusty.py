@@ -8,6 +8,7 @@ from py_isru.lib.power_system import (
     KrustyReactor,
     KrustySpecification,
     PowerSystemStatus,
+    ThermalPowerSystem
 )
 
 @pytest.fixture
@@ -20,6 +21,15 @@ def basic_krusty_spec():
         cooldown_time=7200.0, # 2 hour cooldown
         burn_in_time=86400.0  # 24 hour burn-in
     )
+
+def test_krusty_inheritance(basic_krusty_spec):
+    """Test KRUSTY inherits from ThermalPowerSystem"""
+    reactor = KrustyReactor(basic_krusty_spec)
+    assert isinstance(reactor, ThermalPowerSystem)
+    assert hasattr(reactor, 'temperature')
+    assert hasattr(reactor, 'max_temp')
+    assert hasattr(reactor, 'min_temp')
+    assert hasattr(reactor, 'manage_thermal')
 
 def test_krusty_spec_validation():
     """Test KRUSTY specification validation"""
@@ -149,6 +159,28 @@ def test_krusty_degradation(basic_krusty_spec):
         reactor.material_creep
     )
     assert np.isclose(final_power / initial_power, expected_reduction, rtol=0.01)
+
+def test_krusty_thermal_management(basic_krusty_spec):
+    """Test KRUSTY thermal management from ThermalPowerSystem"""
+    reactor = KrustyReactor(basic_krusty_spec)
+    
+    # Check initial temperature
+    assert reactor.temperature == 450.0  # Initial standby temperature
+    
+    # Start and run reactor
+    reactor.start()
+    reactor.step(basic_krusty_spec.startup_time)
+    
+    # Temperature should be managed during operation
+    assert reactor.temperature >= reactor.min_temp
+    assert reactor.temperature <= reactor.max_temp
+    
+    # Force temperature fault
+    reactor.temperature = reactor.max_temp + 50.0
+    reactor.step(60.0)
+    assert reactor.status == PowerSystemStatus.FAULT
+    assert "Temperature" in reactor.fault_condition
+    assert reactor.calculate_output() == 0.0
 
 def test_krusty_protection(basic_krusty_spec):
     """Test KRUSTY reactor protection systems"""

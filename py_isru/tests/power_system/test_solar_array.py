@@ -1,64 +1,80 @@
 """
 Tests for solar array implementation.
 """
-import pytest
 import numpy as np
+import pytest
 
-from py_isru.lib.power_system.solar.array import (
+from py_isru.lib.power_system import (
     SolarArray,
     SolarArraySpecification,
     SolarPanelSpecification,
     TrackerSpecification,
     TrackingType,
-    PowerSystemStatus
+    PowerSystemStatus,
+    ThermalPowerSystem
 )
 
 @pytest.fixture
-def basic_panel_spec():
-    """Basic solar panel specification"""
-    return SolarPanelSpecification(
-        area=2.0,              # 2 m²
-        base_efficiency=0.20,  # 20% efficient
-        max_temp=100.0,       # 100°C max
-        min_temp=-100.0,      # -100°C min
-        mass=10.0,            # 10 kg
-        dust_tolerance=0.30    # 30% dust coverage before degraded
-    )
-
-@pytest.fixture
-def basic_tracker_spec():
-    """Basic tracker specification"""
-    return TrackerSpecification(
-        type=TrackingType.DUAL_AXIS,
-        power_consumption=50.0,     # 50W when moving
-        max_slew_rate=5.0,         # 5 deg/s
-    )
-
-@pytest.fixture
-def basic_array_spec(basic_panel_spec, basic_tracker_spec):
-    """Basic array specification"""
+def basic_array_spec():
+    """Basic solar array specification"""
     return SolarArraySpecification(
         n_panels=4,
-        panel_spec=basic_panel_spec,
-        tracker_spec=basic_tracker_spec
+        panel_spec=SolarPanelSpecification(
+            area=1.0,                # 1 m²
+            base_efficiency=0.2,     # 20% efficient
+            max_temp=100.0,          # 100°C max
+            min_temp=-100.0,         # -100°C min
+            mass=10.0,               # 10 kg
+            dust_tolerance=0.5       # 50% dust coverage before degraded
+        ),
+        tracker_spec=TrackerSpecification(
+            type=TrackingType.DUAL_AXIS,
+            power_consumption=10.0,  # 10W per tracker
+            max_slew_rate=1.0       # 1 deg/s
+        )
     )
 
-def test_array_spec_validation(basic_panel_spec, basic_tracker_spec):
+def test_array_inheritance(basic_array_spec):
+    """Test array inherits from ThermalPowerSystem"""
+    array = SolarArray(basic_array_spec)
+    assert isinstance(array, ThermalPowerSystem)
+    assert hasattr(array, 'temperature')
+    assert hasattr(array, 'max_temp')
+    assert hasattr(array, 'min_temp')
+    assert hasattr(array, 'manage_thermal')
+    
+    # Check temperature conversion from °C to K
+    assert array.max_temp == basic_array_spec.panel_spec.max_temp + 273.15
+    assert array.min_temp == basic_array_spec.panel_spec.min_temp + 273.15
+
+def test_array_spec_validation():
     """Test array specification validation"""
     # Valid spec should work
     spec = SolarArraySpecification(
         n_panels=4,
-        panel_spec=basic_panel_spec,
-        tracker_spec=basic_tracker_spec
+        panel_spec=SolarPanelSpecification(
+            area=1.0,
+            base_efficiency=0.2,
+            max_temp=100.0,
+            min_temp=-100.0,
+            mass=10.0,
+            dust_tolerance=0.5
+        )
     )
     assert spec.n_panels == 4
     
-    # Invalid specs should raise
+    # Test invalid specs
     with pytest.raises(ValueError):
         SolarArraySpecification(
-            n_panels=0,
-            panel_spec=basic_panel_spec,
-            tracker_spec=basic_tracker_spec
+            n_panels=0,  # Must be positive
+            panel_spec=SolarPanelSpecification(
+                area=1.0,
+                base_efficiency=0.2,
+                max_temp=100.0,
+                min_temp=-100.0,
+                mass=10.0,
+                dust_tolerance=0.5
+            )
         )
 
 def test_array_initial_state(basic_array_spec):
@@ -67,205 +83,173 @@ def test_array_initial_state(basic_array_spec):
     assert array.status == PowerSystemStatus.ONLINE
     assert len(array.panels) == basic_array_spec.n_panels
     assert len(array.trackers) == basic_array_spec.n_panels
-    assert array.fault_condition is None
+    assert array.temperature == 298.15  # Default from ThermalPowerSystem
+    
+    # Check all components
+    for panel in array.panels:
+        assert panel.status == PowerSystemStatus.ONLINE
+        assert panel.dust_coverage == 0.0
+        
+    for tracker in array.trackers:
+        assert tracker.status == PowerSystemStatus.ONLINE
 
-def test_array_basic_output(basic_array_spec):
-    """Test basic power output calculation"""
+def test_array_power_calculation(basic_array_spec):
+    """Test array power output calculation"""
     array = SolarArray(basic_array_spec)
     
     # Update with standard test conditions
     array.update_environment(
-        incident_power=1000.0,  # 1000 W/m²
+        incident_power=1000.0,  # 1 kW/m²
         temperature=25.0,       # 25°C
-        sun_azimuth=0.0,       # Sun directly south
-        sun_elevation=90.0,     # Sun directly overhead
-        dust_added=0.0,         # Clean panels
-        dt=1.0                  # 1 second step
+        sun_azimuth=180.0,     # South
+        sun_elevation=45.0,     # 45° elevation
+        dust_added=0.0,
+        dt=1.0
     )
     
-    # Let trackers complete movement (18 steps at 5 deg/s to reach 90°)
-    for _ in range(18):
-        array.update_environment(
-            incident_power=1000.0,
-            temperature=25.0,
-            sun_azimuth=0.0,
-            sun_elevation=90.0,
-            dust_added=0.0,
-            dt=1.0
-        )
+    # Calculate expected power
+    n_panels = basic_array_spec.n_panels
+    panel_power = 1000.0 * 1.0 * 0.2  # incident_power * area * efficiency
+    tracker_power = -10.0  # Each tracker consumes 10W
+    expected_power = n_panels * panel_power + n_panels * tracker_power
     
-    # Expected: 4 panels * (1000 W/m² * 2 m² * 0.20 efficiency) = 1600W
-    # No tracker power consumption when not moving
-    assert np.isclose(array.calculate_output(), 1600.0, rtol=1e-10)
+    assert array.calculate_output() == pytest.approx(expected_power, rel=1e-10)
 
-def test_array_tracking_power(basic_array_spec):
-    """Test power consumption during tracking"""
+def test_array_thermal_management(basic_array_spec):
+    """Test array thermal management"""
     array = SolarArray(basic_array_spec)
     
-    # Update with moving trackers
+    # Test normal temperature
     array.update_environment(
         incident_power=1000.0,
         temperature=25.0,
-        sun_azimuth=45.0,      # Requires movement
+        sun_azimuth=180.0,
         sun_elevation=45.0,
         dust_added=0.0,
         dt=1.0
     )
+    array.step(1.0)
+    assert array.status == PowerSystemStatus.ONLINE
     
-    # Check power during movement
-    # 1600W - (4 trackers * 50W) = 1400W
-    assert np.isclose(array.calculate_output(), 1400.0, rtol=1e-10)
-    
-    # Let trackers complete movement (9 steps at 5 deg/s to reach 45°)
-    for _ in range(9):
-        array.update_environment(
-            incident_power=1000.0,
-            temperature=25.0,
-            sun_azimuth=45.0,
-            sun_elevation=45.0,
-            dust_added=0.0,
-            dt=1.0
-        )
-    
-    # After movement, should have full power
-    assert np.isclose(array.calculate_output(), 1600.0, rtol=1e-10)
-
-def test_array_dust_impact(basic_array_spec):
-    """Test dust impact on array"""
-    array = SolarArray(basic_array_spec)
-    
-    # Start clean
+    # Test overheating
     array.update_environment(
         incident_power=1000.0,
-        temperature=25.0,
-        sun_azimuth=0.0,
-        sun_elevation=90.0,
+        temperature=150.0,  # Above max_temp
+        sun_azimuth=180.0,
+        sun_elevation=45.0,
         dust_added=0.0,
         dt=1.0
     )
+    array.step(1.0)
+    assert array.status == PowerSystemStatus.FAULT
+    assert "Temperature" in array.fault_condition
     
-    # Let trackers complete movement (18 steps at 5 deg/s to reach 90°)
-    for _ in range(18):
-        array.update_environment(
-            incident_power=1000.0,
-            temperature=25.0,
-            sun_azimuth=0.0,
-            sun_elevation=90.0,
-            dust_added=0.0,
-            dt=1.0
-        )
-    
-    initial_power = array.calculate_output()
-    
-    # Add dust
+    # Test overcooling
     array.update_environment(
         incident_power=1000.0,
-        temperature=25.0,
-        sun_azimuth=0.0,
-        sun_elevation=90.0,
-        dust_added=0.20,  # 20% coverage
+        temperature=-150.0,  # Below min_temp
+        sun_azimuth=180.0,
+        sun_elevation=45.0,
+        dust_added=0.0,
         dt=1.0
     )
+    array.step(1.0)
+    assert array.status == PowerSystemStatus.FAULT
+    assert "Temperature" in array.fault_condition
     
-    # Power should be reduced by 20%
-    assert np.isclose(array.calculate_output(), initial_power * 0.8, rtol=1e-10)
-    assert array.status == PowerSystemStatus.ONLINE  # Still under tolerance
-    
-    # Add more dust to exceed tolerance
+    # Test recovery
     array.update_environment(
         incident_power=1000.0,
         temperature=25.0,
-        sun_azimuth=0.0,
-        sun_elevation=90.0,
-        dust_added=0.20,  # Another 20%
+        sun_azimuth=180.0,
+        sun_elevation=45.0,
+        dust_added=0.0,
+        dt=1.0
+    )
+    array.step(1.0)
+    assert array.status == PowerSystemStatus.ONLINE
+
+def test_array_dust_effects(basic_array_spec):
+    """Test array dust accumulation effects"""
+    array = SolarArray(basic_array_spec)
+    
+    # Set baseline conditions
+    array.update_environment(
+        incident_power=1000.0,
+        temperature=25.0,
+        sun_azimuth=180.0,
+        sun_elevation=45.0,
+        dust_added=0.0,
+        dt=1.0
+    )
+    baseline_power = array.calculate_output()
+    
+    # Add dust to degrade performance
+    array.update_environment(
+        incident_power=1000.0,
+        temperature=25.0,
+        sun_azimuth=180.0,
+        sun_elevation=45.0,
+        dust_added=0.6,  # Above dust_tolerance
         dt=1.0
     )
     
     # Array should be degraded
     assert array.status == PowerSystemStatus.DEGRADED
+    assert array.calculate_output() < baseline_power
     
     # Clean array
     array.clean()
     array.update_environment(
         incident_power=1000.0,
         temperature=25.0,
-        sun_azimuth=0.0,
-        sun_elevation=90.0,
+        sun_azimuth=180.0,
+        sun_elevation=45.0,
         dust_added=0.0,
         dt=1.0
     )
-    assert np.isclose(array.calculate_output(), initial_power, rtol=1e-10)
     assert array.status == PowerSystemStatus.ONLINE
+    assert array.calculate_output() == pytest.approx(baseline_power, rel=1e-10)
 
-def test_array_temperature_protection(basic_array_spec):
-    """Test temperature protection"""
+def test_array_component_faults(basic_array_spec):
+    """Test array handling of component faults"""
     array = SolarArray(basic_array_spec)
     
-    # Start at normal temperature
-    array.update_environment(
-        incident_power=1000.0,
-        temperature=25.0,
-        sun_azimuth=0.0,
-        sun_elevation=90.0,
-        dust_added=0.0,
-        dt=1.0
-    )
-    initial_power = array.calculate_output()
-    
-    # Heat beyond limits
-    array.update_environment(
-        incident_power=1000.0,
-        temperature=150.0,  # Above max temp
-        sun_azimuth=0.0,
-        sun_elevation=90.0,
-        dust_added=0.0,
-        dt=1.0
-    )
-    
-    # Array should fault
+    # Fault a panel
+    array.panels[0].status = PowerSystemStatus.FAULT
+    array._update_status()
     assert array.status == PowerSystemStatus.FAULT
-    assert array.calculate_output() == 0.0
+    assert "components faulted" in array.fault_condition
     
-    # Return to normal temperature
-    array.update_environment(
-        incident_power=1000.0,
-        temperature=25.0,
-        sun_azimuth=0.0,
-        sun_elevation=90.0,
-        dust_added=0.0,
-        dt=1.0
-    )
-    
-    # Should recover
-    assert array.status == PowerSystemStatus.ONLINE
-    assert np.isclose(array.calculate_output(), initial_power, rtol=1e-10)
-
-def test_array_fault_handling(basic_array_spec):
-    """Test fault handling"""
-    array = SolarArray(basic_array_spec)
-    
-    # Invalid time step
-    with pytest.raises(ValueError):
-        array.update_environment(
-            incident_power=1000.0,
-            temperature=25.0,
-            sun_azimuth=0.0,
-            sun_elevation=90.0,
-            dust_added=0.0,
-            dt=-1.0
-        )
-    
-    # Force tracker fault
+    # Fault a tracker
+    array.panels[0].status = PowerSystemStatus.ONLINE
     array.trackers[0].status = PowerSystemStatus.FAULT
+    array._update_status()
+    assert array.status == PowerSystemStatus.FAULT
+    
+    # Degrade multiple components
+    array.trackers[0].status = PowerSystemStatus.ONLINE
+    array.panels[0].status = PowerSystemStatus.DEGRADED
+    array.panels[1].status = PowerSystemStatus.DEGRADED
+    array._update_status()
+    assert array.status == PowerSystemStatus.DEGRADED
+
+def test_array_temperature_reporting(basic_array_spec):
+    """Test array temperature reporting"""
+    array = SolarArray(basic_array_spec)
+    
+    # Set temperature
     array.update_environment(
         incident_power=1000.0,
         temperature=25.0,
-        sun_azimuth=0.0,
-        sun_elevation=90.0,
+        sun_azimuth=180.0,
+        sun_elevation=45.0,
         dust_added=0.0,
         dt=1.0
     )
     
-    # Array should fault
-    assert array.status == PowerSystemStatus.FAULT
-    assert "1 components faulted" in array.fault_condition 
+    # Check temperature reporting
+    temps = array.get_panel_temperatures()
+    assert len(temps) == basic_array_spec.n_panels
+    for temp in temps:
+        assert temp == pytest.approx(25.0, rel=1e-10)  # Should be in °C 

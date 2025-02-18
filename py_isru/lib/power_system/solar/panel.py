@@ -6,7 +6,7 @@ from typing import Optional
 
 import numpy as np
 
-from ..base import PowerSystem, PowerSystemStatus
+from ..base import ThermalPowerSystem, PowerSystemStatus
 
 
 @dataclass
@@ -32,7 +32,7 @@ class SolarPanelSpecification:
             raise ValueError("Dust tolerance must be between 0 and 1")
 
 
-class SolarPanel(PowerSystem):
+class SolarPanel(ThermalPowerSystem):
     """Models a single solar panel with dust accumulation and basic protection"""
     
     def __init__(self, spec: SolarPanelSpecification):
@@ -41,10 +41,13 @@ class SolarPanel(PowerSystem):
         self.status = PowerSystemStatus.ONLINE
         
         # Operating state
-        self.temperature: float = 20.0  # °C
         self.dust_coverage: float = 0.0  # 0-1 scale
         self.incident_power: float = 0.0  # W/m²
         self.angle_of_incidence: float = 0.0  # radians
+        
+        # Set thermal limits from spec (convert °C to K)
+        self.max_temp = self.spec.max_temp + 273.15
+        self.min_temp = self.spec.min_temp + 273.15
         
         # Fault tracking
         self.fault_condition: Optional[str] = None
@@ -55,15 +58,29 @@ class SolarPanel(PowerSystem):
             return 0.0
             
         try:
+            # Validate inputs first
+            if not np.isfinite(self.angle_of_incidence):
+                raise ValueError("Invalid angle of incidence")
+            if not np.isfinite(self.incident_power):
+                raise ValueError("Invalid incident power")
+                
             # Basic power calculation
             effective_area = self.spec.area * np.cos(self.angle_of_incidence)
+            if not np.isfinite(effective_area):
+                raise ValueError("Invalid effective area calculation")
+                
             incident_power = self.incident_power * effective_area
+            if not np.isfinite(incident_power):
+                raise ValueError("Invalid incident power calculation")
             
             # Account for dust coverage
             dust_factor = 1.0 - self.dust_coverage
             
             # Calculate output power
             output_power = incident_power * self.spec.base_efficiency * dust_factor
+            if not np.isfinite(output_power):
+                raise ValueError("Invalid output power calculation")
+                
             return max(0.0, output_power)
             
         except Exception as e:
@@ -91,21 +108,26 @@ class SolarPanel(PowerSystem):
             dust_added: Amount of dust added this step (0-1 scale)
         """
         self.incident_power = max(0.0, incident_power)
-        self.temperature = temperature
+        self.temperature = temperature + 273.15  # Convert °C to K
         self.angle_of_incidence = angle_of_incidence
         self.dust_coverage = min(1.0, self.dust_coverage + dust_added)
-        
-        # Update status based on temperature
-        if self.temperature > self.spec.max_temp or self.temperature < self.spec.min_temp:
-            self.status = PowerSystemStatus.FAULT
-            self.fault_condition = f"Temperature {self.temperature}°C outside limits"
-        elif self.status == PowerSystemStatus.FAULT and self.fault_condition and "Temperature" in self.fault_condition:
-            # Only clear temperature faults, leave other faults alone
-            self.status = PowerSystemStatus.ONLINE
-            self.fault_condition = None
         
         # Update status based on dust coverage
         if self.dust_coverage > self.spec.dust_tolerance:
             self.status = PowerSystemStatus.DEGRADED
         elif self.status == PowerSystemStatus.DEGRADED and self.dust_coverage <= self.spec.dust_tolerance:
-            self.status = PowerSystemStatus.ONLINE 
+            self.status = PowerSystemStatus.ONLINE
+            
+    def manage_thermal(self, dt: float) -> None:
+        """Handle thermal state changes"""
+        # Call parent thermal management first
+        super().manage_thermal(dt)
+        
+        # Check temperature limits
+        if self.temperature > self.max_temp or self.temperature < self.min_temp:
+            self.status = PowerSystemStatus.FAULT
+            self.fault_condition = f"Temperature {self.temperature-273.15:.1f}°C outside limits"
+        elif self.status == PowerSystemStatus.FAULT and self.fault_condition and "Temperature" in self.fault_condition:
+            # Only clear temperature faults, leave other faults alone
+            self.status = PowerSystemStatus.ONLINE
+            self.fault_condition = None 

@@ -6,7 +6,7 @@ from typing import Optional
 
 import numpy as np
 
-from .base import PowerSystem, PowerSystemStatus
+from .base import ThermalPowerSystem, PowerSystemStatus
 from .constants import (
     SECONDS_PER_YEAR,
     KRUSTY_BURNUP_PER_YEAR,
@@ -35,14 +35,24 @@ class KrustySpecification:
             raise ValueError("Cooldown time must be positive")
         if self.burn_in_time <= 0:
             raise ValueError("Burn-in time must be positive")
+    
+    def __repr__(self):
+        return (f"KrustySpecification(nominal_power={self.nominal_power}, "
+                f"max_power={self.max_power}, startup_time={self.startup_time}, "
+                f"cooldown_time={self.cooldown_time}, burn_in_time={self.burn_in_time})")
 
-class KrustyReactor(PowerSystem):
+class KrustyReactor(ThermalPowerSystem):
     """Models a KRUSTY-style nuclear reactor with realistic degradation"""
     
     def __init__(self, spec: KrustySpecification):
         super().__init__()
         self.spec = spec
         self.status = PowerSystemStatus.OFFLINE
+        
+        # Set thermal limits and initial temperature for nuclear reactor
+        self.max_temp = 800.0  # K (typical for small nuclear reactor)
+        self.min_temp = 400.0  # K (minimum for efficient operation)
+        self.temperature = 450.0  # K (initial temperature during standby)
         
         # Progress tracking
         self.startup_progress = 0.0
@@ -61,6 +71,13 @@ class KrustyReactor(PowerSystem):
         self.burn_in_complete = False
         self.fault_condition: Optional[str] = None
     
+    def __repr__(self):
+        return (f"KrustyReactor(status={self.status}, current_power={self.current_power}, "
+                f"temperature={self.temperature}, startup_progress={self.startup_progress}, "
+                f"cooldown_progress={self.cooldown_progress}, burn_in_time={self.burn_in_time}, "
+                f"fuel_burnup={self.fuel_burnup}, thermoelectric_degradation={self.thermoelectric_degradation}, "
+                f"material_creep={self.material_creep}, fault_condition={self.fault_condition})")
+    
     def start(self) -> bool:
         """Begin reactor startup sequence"""
         if self.status == PowerSystemStatus.FAULT:
@@ -69,7 +86,7 @@ class KrustyReactor(PowerSystem):
         if self.cooldown_progress < 1.0:
             return False
             
-        self.status = PowerSystemStatus.ONLINE
+        self.status = PowerSystemStatus.STARTUP
         self.startup_progress = 0.0
         self.burn_in_complete = False
         self.burn_in_time = 0.0
@@ -83,7 +100,7 @@ class KrustyReactor(PowerSystem):
         if self.startup_progress < 1.0:
             return False
             
-        self.status = PowerSystemStatus.OFFLINE
+        self.status = PowerSystemStatus.SHUTDOWN
         self.cooldown_progress = 0.0
         return True
     
@@ -97,6 +114,12 @@ class KrustyReactor(PowerSystem):
             return 0.0
             
         try:
+            # Check for invalid power values
+            if np.isnan(self.current_power):
+                self.status = PowerSystemStatus.FAULT
+                self.fault_condition = "Invalid power value: NaN detected"
+                return 0.0
+                
             # Apply degradation factors
             degradation = 1.0 - (
                 self.fuel_burnup +
@@ -111,30 +134,36 @@ class KrustyReactor(PowerSystem):
             self.fault_condition = f"Power calculation error: {str(e)}"
             return 0.0
     
-    def step(self, dt: float) -> None:
-        """Update reactor state"""
-        # Validate timestep
-        if dt <= 0:
-            raise ValueError("Time step must be positive")
-            
+    def manage_thermal(self, dt: float) -> None:
+        """Update reactor thermal state"""
         try:
+            # Call parent thermal management first
+            super().manage_thermal(dt)
+            
+            # Check for invalid power values
+            if np.isnan(self.current_power):
+                self.status = PowerSystemStatus.FAULT
+                self.fault_condition = "Power calculation error: NaN value detected"
+                self.current_power = 0.0
+                return
+            
             if self.status == PowerSystemStatus.FAULT:
                 self.current_power = 0.0
                 return
                 
-            # Validate current power
-            if not isinstance(self.current_power, (int, float)) or np.isnan(self.current_power):
-                raise ValueError("Invalid power value")
-                
             # Handle startup sequence
-            if self.status == PowerSystemStatus.ONLINE and self.startup_progress < 1.0:
+            if self.status == PowerSystemStatus.STARTUP and self.startup_progress < 1.0:
                 self.startup_progress = min(1.0, self.startup_progress + dt / self.spec.startup_time)
                 self.current_power = self.spec.nominal_power * self.startup_progress
+                if self.startup_progress >= 1.0:
+                    self.status = PowerSystemStatus.ONLINE
                 
             # Handle shutdown sequence
-            elif self.status == PowerSystemStatus.OFFLINE and self.cooldown_progress < 1.0:
+            elif self.status == PowerSystemStatus.SHUTDOWN and self.cooldown_progress < 1.0:
                 self.cooldown_progress = min(1.0, self.cooldown_progress + dt / self.spec.cooldown_time)
                 self.current_power = self.spec.nominal_power * (1.0 - self.cooldown_progress)
+                if self.cooldown_progress >= 1.0:
+                    self.status = PowerSystemStatus.OFFLINE
                 
             # Track burn-in time only when at full power
             if (self.status == PowerSystemStatus.ONLINE and 
