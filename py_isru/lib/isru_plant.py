@@ -86,6 +86,7 @@ class ISRUPlantErrorCode(Enum):
     PLANT_STARTUP_FAILED = auto()
     PLANT_SHUTDOWN_FAILED = auto()
     PLANT_NOT_RUNNING_OR_EMERGENCY = auto()
+    POWER_LIMITED = auto()
     
     
 class ISRUPlantWarning(Enum):
@@ -135,6 +136,7 @@ class ISRUPlantState:
     def set_status(self, status: PlantStatus) -> None:
         """Set the plant status."""
         self.status = status
+        self.warning = ISRUPlantWarning.OPERATIONAL_STATUS_CHANGE
         logger.info(f"Status set to {status}")
         
     def update_resource_levels(self, tanks: Dict[ResourceType, StorageTank]) -> None:
@@ -283,48 +285,50 @@ class ISRUPlant:
         self.history = [initial_state]
         logger.info(f"State initialized: {self.get_state()}")
         
-    def step(self, dt_s: float) -> None:
+    def step(self, dt_s: float, skip_electrolysis: bool = False, skip_sabatier: bool = False) -> None:
         """
         Advance the plant state by one time step.
 
         Args:
             dt_s: Time step in seconds.
+            skip_electrolysis: If True, skip the electrolysis step.
+            skip_sabatier: If True, skip the sabatier step.
         """
-        for _ in range(int(dt_s)):
-            step_state = ISRUPlantState(
-                time_elapsed_s=self.get_state().time_elapsed_s + 1.0
-            )
-            logger.debug(f"Plant state: {step_state}")
-            self.check_for_standby()
-            logger.debug(f"Plant state after standby check: {step_state}")
-            
-            self._update_power_systems(1.0)
-            logger.debug(f"Plant state after power systems update: {step_state}")
-            available_power_W = self._calculate_available_power_W()
-            required_power_W = self._calculate_required_power_W()
-            
-            try:
-                self._check_power_availability(available_power_W, required_power_W)
-            except ISRUPlantError as e:
-                step_state.error = e
-                if e == ISRUPlantError(ISRUPlantErrorCode.INSUFFICIENT_POWER):
-                    self.set_status(PlantStatus.EMERGENCY)
-                    raise
-                elif e == ISRUPlantError(ISRUPlantErrorCode.INSUFFICIENT_RESOURCE):
-                    self.set_status(PlantStatus.STANDBY)
-            logger.debug(f"Plant state after power check: {step_state}")
-            
-            step_state = self._update_reactors(1.0, available_power_W, step_state)
-            logger.debug(f"Plant state after reactors: {step_state}")
-            step_state = self._update_storage(dt_s, step_state)
-            logger.debug(f"Plant state after storage: {step_state}")
+        step_state = ISRUPlantState(
+            time_elapsed_s=self.get_state().time_elapsed_s + dt_s,
+            status=self.get_status()
+        )
+        self.history.append(step_state)
+        
+        logger.debug(f"Plant state: {step_state}")
+        self.check_for_standby()
+        logger.debug(f"Plant state after standby check: {step_state}")
+        
+        self._update_power_systems(dt_s)
+        logger.debug(f"Plant state after power systems update: {step_state}")
+        available_power_W = self._calculate_available_power_W()
+        required_power_W = self._calculate_required_power_W()
+        
+        try:
+            self._check_power_availability(available_power_W, required_power_W)
+        except ISRUPlantError as e:
+            step_state.error = e
+            if e.error_code == ISRUPlantErrorCode.INSUFFICIENT_POWER:
+                self.set_status(PlantStatus.EMERGENCY)
+            elif e.error_code == ISRUPlantErrorCode.INSUFFICIENT_RESOURCE:
+                self.set_status(PlantStatus.STANDBY)
+        logger.debug(f"Plant state after power check: {step_state}")
+        
+        step_state = self._update_reactors(dt_s, available_power_W, step_state, skip_electrolysis, skip_sabatier)
+        logger.debug(f"Plant state after reactors: {step_state}")
+        step_state = self._update_storage(dt_s, step_state)
+        logger.debug(f"Plant state after storage: {step_state}")
 
-            # Check if maintenance is required.
-            # if self.get_state().time_elapsed_s > self.spec.maintenance_interval_s:
-            #     logger.info("Maintenance interval reached; transitioning to MAINTENANCE mode.")
-            #     self.set_status(PlantStatus.MAINTENANCE)
-                
-            self.history.append(step_state)
+        # Check if maintenance is required.
+        # if self.get_state().time_elapsed_s > self.spec.maintenance_interval_s:
+        #     logger.info("Maintenance interval reached; transitioning to MAINTENANCE mode.")
+        #     self.set_status(PlantStatus.MAINTENANCE)
+        # logger.info(f"Plant state: {step_state}")
             
     def check_for_standby(self) -> None:
         """Check if the plant should enter STANDBY mode."""
@@ -334,7 +338,7 @@ class ISRUPlant:
         
     def _check_power_availability(self, available_power_W: float, required_power_W: float) -> None:
         """Check if power is available."""
-        logger.info(f"Power check: available={available_power_W:.2f} W, required={required_power_W:.2f} W")
+        # logger.info(f"Power check: available={available_power_W:.2f} W, required={required_power_W:.2f} W")
         if available_power_W < required_power_W:
             if available_power_W < self.spec.emergency_power_threshold_W:
                 logger.error("Insufficient power; entering EMERGENCY mode.")
@@ -388,9 +392,9 @@ class ISRUPlant:
         
         self.battery.step(dt_s)
 
-        logger.info(f"Power systems updated: solar={solar_output_W:.2f}W, krusty={krusty_output_W:.2f}W, "
-                   f"required={required_power_W:.2f}W, battery_delta={power_delta_W:.2f}W, "
-                   f"battery_soc={self.battery.state_of_charge:.2f}")
+        # logger.info(f"Power systems updated: solar={solar_output_W:.2f}W, krusty={krusty_output_W:.2f}W, "
+        #            f"required={required_power_W:.2f}W, battery_delta={power_delta_W:.2f}W, "
+        #            f"battery_soc={self.battery.state_of_charge:.2f}")
 
     def _calculate_available_power_W(self) -> float:
         """Calculate the total available power (W)."""
@@ -490,7 +494,7 @@ class ISRUPlant:
         # Run Sabatier if sufficient CO2 and H2 are available.
         sufficient_reactants = (available_co2_mol > 0 and available_h2_mol >= 4)
         sabatier_operational = self.sabatier.operational_status == OperationalStatus.RUNNING
-        in_startup_or_first_minute = self.get_status() == PlantStatus.STARTUP or self.time_s < 60.0
+        in_startup_or_first_minute = self.get_status() == PlantStatus.STARTUP or self.get_state().time_elapsed_s < 60.0
         if sufficient_reactants and (sabatier_operational or in_startup_or_first_minute):            
             # Gradually ramp up CO2 usage during first few cycles
             if in_startup_or_first_minute:
@@ -544,7 +548,7 @@ class ISRUPlant:
                 
         return sabatier_outputs, available_power_W
 
-    def _update_reactors(self, dt_s: float, available_power_W: float, state: ISRUPlantState) -> ISRUPlantState:
+    def _update_reactors(self, dt_s: float, available_power_W: float, state: ISRUPlantState, skip_electrolysis: bool = False, skip_sabatier: bool = False) -> ISRUPlantState:
         """Update reactor states and process chemical reactions."""
         
         # Don't run reactors if the plant is not running. Pass if we're in STARTUP.
@@ -552,14 +556,21 @@ class ISRUPlant:
         if self.get_status() not in pass_status:
             logger.debug(f"Plant not running (status={self.get_status()}); skipping reactor updates.")
             return state
-
-        available_h2o_mol = self.tanks[ResourceType.H2O].moles
-        initial_available_power_W = available_power_W
-        electrolysis_outputs, available_power_W = self._update_electrolysis(dt_s, available_power_W, available_h2o_mol)
         
-        available_co2_mol = self.tanks[ResourceType.CO2].moles
-        available_h2_mol = self.tanks[ResourceType.H2].moles
-        sabatier_outputs, available_power_W = self._update_sabatier(dt_s, available_power_W, available_co2_mol, available_h2_mol)
+        initial_available_power_W = available_power_W
+
+        if skip_electrolysis:
+            electrolysis_outputs = {resource: 0.0 for resource in ResourceType}
+        else:
+            available_h2o_mol = self.tanks[ResourceType.H2O].moles
+            electrolysis_outputs, available_power_W = self._update_electrolysis(dt_s, available_power_W, available_h2o_mol)
+        
+        if skip_sabatier:
+            sabatier_outputs = {resource: 0.0 for resource in ResourceType}
+        else:
+            available_co2_mol = self.tanks[ResourceType.CO2].moles
+            available_h2_mol = self.tanks[ResourceType.H2].moles
+            sabatier_outputs, available_power_W = self._update_sabatier(dt_s, available_power_W, available_co2_mol, available_h2_mol)
         
         # Update state.
         state.total_CH4_produced_mol += sabatier_outputs.get(ResourceType.CH4, 0.0)
@@ -575,7 +586,7 @@ class ISRUPlant:
         state.update_resource_levels(self.tanks)
         return state
     
-    def start(self) -> bool:
+    def start(self) -> None:
         """
         Start the plant.
 
@@ -618,7 +629,7 @@ class ISRUPlant:
         startup_time = max(sabatier_startup_time, electrolysis_startup_time)
         elapsed_time = 0.0
         
-        self.step(startup_time)
+        self.step(startup_time, skip_electrolysis=True, skip_sabatier=False)
         
         # Check if reactors are online
         if (self.sabatier.operational_status == OperationalStatus.RUNNING and 
@@ -641,7 +652,7 @@ class ISRUPlant:
             self.set_status(PlantStatus.STANDBY)
             raise ISRUPlantError(ISRUPlantErrorCode.PLANT_STARTUP_FAILED)
 
-    def shutdown(self) -> bool:
+    def shutdown(self) -> None:
         """
         Shutdown the plant.
 

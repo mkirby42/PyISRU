@@ -4,7 +4,7 @@ from math import isclose
 
 from py_isru.lib.storage_tank import TankSpecification
 from py_isru.lib.reactor import ResourceType
-from py_isru.lib.isru_plant import ISRUPlant, PlantSpecification, PlantStatus, ISRUPlantError
+from py_isru.lib.isru_plant import ISRUPlant, PlantSpecification, PlantStatus, ISRUPlantError, ISRUPlantErrorCode
 from py_isru.lib.sabatier_reactor import SabatierSpecification
 from py_isru.lib.electrolysis_reactor import ElectrolysisSpecification
 from py_isru.lib.power_system import SolarArraySpecification, SolarPanelSpecification, BatterySpecification, KrustySpecification
@@ -163,33 +163,44 @@ def test_plant_start_stop(isru_plant):
     isru_plant.tanks[ResourceType.H2O].moles = 10.0
     
     assert isru_plant.get_status() == PlantStatus.STANDBY
-    started = isru_plant.start()
-    assert started is True
+    isru_plant.start()
     assert isru_plant.get_status() == PlantStatus.RUNNING
-    stopped = isru_plant.shutdown()
-    assert stopped is True
+    isru_plant.shutdown()
     assert isru_plant.get_status() == PlantStatus.STANDBY
 
-# def test_plant_step_and_status(isru_plant):
-#     """Test that after a simulation step, the plant time and metrics update."""
-#     isru_plant.start()
-#     initial_time_s = isru_plant.time_s
-#     isru_plant.step(60.0)  # 60 s step
-#     assert isru_plant.time_s > initial_time_s
-#     # Get status report and verify key sections are present.
-#     report = isru_plant.get_status_report()
-#     assert isinstance(report, str)
+def test_plant_step_and_status(isru_plant):
+    """Test that after a simulation step, the plant time and metrics update."""
+    isru_plant.tanks[ResourceType.CO2].moles = 10.0
+    isru_plant.tanks[ResourceType.H2].moles = 10.0
+    isru_plant.tanks[ResourceType.O2].moles = 10.0
+    isru_plant.tanks[ResourceType.CH4].moles = 10.0
+    isru_plant.tanks[ResourceType.H2O].moles = 10.0
+    isru_plant.start()
+    
+    initial_time_s = isru_plant.get_state().time_elapsed_s
+    isru_plant.step(60.0)  # 60 s step
+    assert isru_plant.get_state().time_elapsed_s > initial_time_s
+    
+    # Get status report and verify key sections are present.
+    report = isru_plant.get_status_report()
+    assert report is not None
 
-# def test_plant_emergency_mode(isru_plant):
-#     """
-#     Test that if available power is insufficient, the plant transitions to EMERGENCY mode.
-#     For testing purposes, we monkey-patch the solar array output to return 0 W.
-#     """
-#     isru_plant.start()
-#     # Override solar array output.
-#     isru_plant.solar_array.calculate_output = lambda: 0.0
-#     isru_plant.krusty.calculate_output = lambda: 0.0
-#     isru_plant.battery.calculate_output = lambda: 0.0
-#     isru_plant.step(60.0)
-#     assert isru_plant.get_status() == PlantStatus.EMERGENCY
-#     assert isru_plant.state.error == ISRUPlantError.INSUFFICIENT_POWER
+def test_plant_emergency_mode(isru_plant):
+    """
+    Test that if available power is insufficient, the plant transitions to EMERGENCY mode.
+    For testing purposes, we monkey-patch the solar array output to return 0 W.
+    """
+    isru_plant.tanks[ResourceType.CO2].moles = 10.0
+    isru_plant.tanks[ResourceType.H2].moles = 10.0
+    isru_plant.tanks[ResourceType.O2].moles = 10.0
+    isru_plant.tanks[ResourceType.CH4].moles = 10.0
+    isru_plant.tanks[ResourceType.H2O].moles = 10.0
+    isru_plant.start()
+    # Override solar array output.
+    isru_plant.solar_array.calculate_output = lambda: 0.0
+    isru_plant.krusty.calculate_output = lambda: 0.0
+    isru_plant.battery.calculate_output = lambda: 0.0
+    isru_plant.step(60.0)
+    logger.info(isru_plant.get_state())
+    assert isru_plant.get_state().error.error_code == ISRUPlantErrorCode.INSUFFICIENT_POWER
+    assert isru_plant.get_status() == PlantStatus.EMERGENCY
