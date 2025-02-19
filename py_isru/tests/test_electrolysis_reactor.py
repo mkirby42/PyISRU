@@ -81,7 +81,7 @@ def initial_composition():
 @pytest.fixture
 def reactor(electrolysis_spec, initial_state, dummy_kinetics, initial_composition):
     """Create an ElectrolysisReactor instance for testing."""
-    return ElectrolysisReactor(electrolysis_spec, initial_state, dummy_kinetics, initial_composition)
+    return ElectrolysisReactor(electrolysis_spec, initial_state, initial_composition, dummy_kinetics)
 
 # -----------------------------------------------------------------------------
 # Tests

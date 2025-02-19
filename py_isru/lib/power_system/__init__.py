@@ -7,7 +7,6 @@ from .krusty import KrustyReactor, KrustySpecification
 from .solar.array import SolarArray, SolarArraySpecification
 from .solar.panel import SolarPanel, SolarPanelSpecification
 from .solar.tracker import Tracker, TrackerSpecification, TrackingType
-from .solar.environment import MarsEnvironment, MarsEnvironmentSpecification, DustStormSeverity
 
 __all__ = [
     'PowerSystem',
@@ -25,7 +24,4 @@ __all__ = [
     'Tracker',
     'TrackerSpecification',
     'TrackingType',
-    'MarsEnvironment',
-    'MarsEnvironmentSpecification',
-    'DustStormSeverity'
 ] 

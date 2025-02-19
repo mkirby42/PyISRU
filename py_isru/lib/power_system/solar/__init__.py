@@ -10,8 +10,3 @@ This package provides components for modeling solar power systems on Mars:
 from .panel import SolarPanel, SolarPanelSpecification
 from .tracker import Tracker, TrackerSpecification, TrackingType
 from .array import SolarArray, SolarArraySpecification
-from .environment import (
-    MarsEnvironment,
-    MarsEnvironmentSpecification,
-    DustStormSeverity,
-) 

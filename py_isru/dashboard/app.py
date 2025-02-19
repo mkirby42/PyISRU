@@ -5,7 +5,7 @@ from py_isru.dashboard.components.key_metrics import create_key_metrics_panel
 from py_isru.dashboard.data_provider import DataProvider
 from py_isru.lib.isru_plant import (ISRUPlant, PlantSpecification, ResourceType, 
     SabatierSpecification, ElectrolysisSpecification, TankSpecification, 
-    SolarArraySpecification, BatterySpecification, KrustySpecification, PlantStatus)
+    SolarArraySpecification, BatterySpecification, KrustySpecification)
 from py_isru.lib.power_system import (SolarPanelSpecification, TrackerSpecification, TrackingType)
 from py_isru.dashboard.components.tank_metrics import create_tank_metrics_panel
 from py_isru.dashboard.components.control_panel import create_control_panel

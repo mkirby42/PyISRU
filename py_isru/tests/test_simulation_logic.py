@@ -1,10 +1,11 @@
 import pytest
 import logging
 from py_isru.lib.isru_plant import (
-    ISRUPlant, PlantSpecification, ResourceType, PlantStatus,
+    ISRUPlant, PlantSpecification, ResourceType,
     SabatierSpecification, ElectrolysisSpecification,
     TankSpecification,
 )
+from py_isru.lib.reactor import OperationalStatus
 from py_isru.lib.power_system.solar import (
     SolarPanelSpecification,
     SolarArraySpecification,
@@ -164,10 +165,10 @@ def test_start_shutdown(plant):
     plant.start()
     # Check that the plant status reflects a running state using enum
     assert hasattr(plant, 'status')
-    assert plant.status == PlantStatus.RUNNING
+    assert plant.status == OperationalStatus.RUNNING
     plant.shutdown()
     # After shutdown, the plant returns to STANDBY
-    assert plant.status == PlantStatus.STANDBY
+    assert plant.status == OperationalStatus.STANDBY
 
 
 def test_resource_addition(plant):

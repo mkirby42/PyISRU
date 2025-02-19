@@ -1,6 +1,7 @@
 from dash import html
 import dash_bootstrap_components as dbc
 from py_isru.lib.isru_plant import PlantStatus
+from py_isru.lib.reactor import OperationalStatus
 from dash import Output, Input, State
 import dash
 

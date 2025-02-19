@@ -77,7 +77,6 @@ class ElectrolysisSpecification(ReactorSpecification):
     max_power_W: float
     startup_time_s: float = 300.0    # default: 5 minutes
     shutdown_time_s: float = 300.0   # default: 5 minutes
-    kinetics: ReactionKinetics = None  # Add this
 
 # =============================================================================
 # Revised Electrolysis Reactor Class
@@ -102,10 +101,10 @@ class ElectrolysisReactor(Reactor):
     """
     
     def __init__(self,
-                 spec: ElectrolysisSpecification,
-                 initial_state: ThermodynamicState,
-                 kinetics: ReactionKinetics,
-                 initial_composition_mol: Dict[ResourceType, float]):
+                 reactor_specification: ElectrolysisSpecification,
+                 thermodynamic_state: ThermodynamicState,
+                 initial_composition_mol: Dict[ResourceType, float],
+                 reaction_kinetics: ReactionKinetics):
         """
         Args:
             spec: ElectrolysisSpecification with reactor parameters.
@@ -114,18 +113,18 @@ class ElectrolysisReactor(Reactor):
             initial_composition_mol: Initial inventory of species (mol).
                 Expected keys: ResourceType.H2O, ResourceType.H2, ResourceType.O2.
         """
-        super().__init__(spec, initial_state)
-        self.spec: ElectrolysisSpecification = spec  # type hint
+        super().__init__(reactor_specification, thermodynamic_state)
+        self.reactor_specification: ElectrolysisSpecification = reactor_specification  # type hint
         
         # Electrolysis-specific attributes
-        self.kinetics = kinetics
+        self.reaction_kinetics = reaction_kinetics
         self.membrane_degradation_factor = 1.0  # 1.0 = fresh membrane
         self.membrane_hydration = 1.0  # 1.0 = fully hydrated
         self.operating_hours_cumulative = 0.0  # cumulative operating time (hours)
         self.current_density_A_per_m2 = 0.0  # operating current density (A/m²)
         
         # Internal composition accumulation (mol) - CSTR mass balance.
-        self.composition_mol: Dict[ResourceType, float] = initial_composition_mol.copy()
+        self.composition_mol: Dict[ResourceType, float] = initial_composition_mol
         
         # Standard cell potential at standard conditions (298.15 K)
         self.E0_cell_V = 1.23  # V
@@ -133,8 +132,10 @@ class ElectrolysisReactor(Reactor):
         self.dE_dT_V_per_K = -1.5e-3  # V/K
 
     def __repr__(self):
-        return (f"ElectrolysisReactor(spec={self.spec}, initial_state={self.state}, "
-                f"kinetics={self.kinetics}, initial_composition_mol={self.composition_mol})")
+        return (f"ElectrolysisReactor(reactor_specification={self.reactor_specification}, "
+                f"thermodynamic_state={self.thermodynamic_state}, "
+                f"reaction_kinetics={self.reaction_kinetics}, "
+                f"initial_composition_mol={self.composition_mol})")
 
     # -------------------------------------------------------------------------
     # Utility Methods
@@ -159,7 +160,7 @@ class ElectrolysisReactor(Reactor):
         p_H2_bar = p_H2_Pa / 1e5
         p_O2_bar = p_O2_Pa / 1e5
         
-        T_K = self.state.temperature_K
+        T_K = self.thermodynamic_state.temperature_K
         n_electrons = 4
         F_C_per_mol = constants.physical_constants['Faraday constant'][0]
         
@@ -188,13 +189,13 @@ class ElectrolysisReactor(Reactor):
         Returns:
             Dictionary with keys "activation", "ohmic", "concentration" (V)
         """
-        T_K = self.state.temperature_K
+        T_K = self.thermodynamic_state.temperature_K
         F_C_per_mol = constants.physical_constants['Faraday constant'][0]
         
         # ---- Activation Overpotential ----
         # Get exchange current density (A/m²) from kinetics (if available), else default.
         try:
-            i0_eff_A_per_m2 = self.kinetics.get_exchange_current_density(T_K)
+            i0_eff_A_per_m2 = self.reaction_kinetics.get_exchange_current_density(T_K)
         except AttributeError:
             i0_eff_A_per_m2 = 1e-3  # default value
         
@@ -207,12 +208,12 @@ class ElectrolysisReactor(Reactor):
         # ---- Ohmic Overpotential ----
         # Effective conductivity is scaled by membrane hydration and degradation.
         effective_conductivity_S_per_m = max(1e-2, 
-            self.spec.membrane_conductivity_S_per_m * self.membrane_hydration * self.membrane_degradation_factor)
-        eta_ohmic_V = self.spec.membrane_thickness_m * current_density_A_per_m2 / effective_conductivity_S_per_m
+            self.reactor_specification.membrane_conductivity_S_per_m * self.membrane_hydration * self.membrane_degradation_factor)
+        eta_ohmic_V = self.reactor_specification.membrane_thickness_m * current_density_A_per_m2 / effective_conductivity_S_per_m
         
         # ---- Concentration Overpotential ----
         # Smoothly approach the limiting current density.
-        j_lim_A_per_m2 = self.spec.max_current_density_A_per_m2
+        j_lim_A_per_m2 = self.reactor_specification.max_current_density_A_per_m2
         # Use a logistic-like smoothing function instead of a hard cutoff:
         delta = 1e-6
         ratio = current_density_A_per_m2 / (j_lim_A_per_m2 + delta)
@@ -235,7 +236,7 @@ class ElectrolysisReactor(Reactor):
         """
         total_inflow_mol_per_s = sum(inputs_mol_per_s.values())
         total_moles = max(sum(self.composition_mol.values()), 1e-12)
-        V_m3 = self.spec.volume_m3
+        V_m3 = self.reactor_specification.volume_m3
         
         for species in self.composition_mol:
             n_old = self.composition_mol.get(species, 0.0)
@@ -252,17 +253,17 @@ class ElectrolysisReactor(Reactor):
         Effective thermal mass includes the reactor structure and the contents (using an approximate Cp).
         """
         T_ambient_K = 210.0  # Martian ambient temperature (K)
-        heat_loss_W = self.spec.heat_loss_coefficient_W_per_m2K * self.spec.surface_area_m2 * (self.state.temperature_K - T_ambient_K)
+        heat_loss_W = self.reactor_specification.heat_loss_coefficient_W_per_m2K * self.reactor_specification.surface_area_m2 * (self.thermodynamic_state.temperature_K - T_ambient_K)
         net_heat_W = power_W - heat_loss_W
         
-        effective_thermal_mass_J_per_K = self.spec.thermal_mass_J_per_K
+        effective_thermal_mass_J_per_K = self.reactor_specification.thermal_mass_J_per_K
         for species, n_mol in self.composition_mol.items():
             # Use an approximate Cp value (J/(mol·K)); refine per species if desired.
             Cp_J_per_molK = 33.0  
             effective_thermal_mass_J_per_K += n_mol * Cp_J_per_molK
         
         dT_K = net_heat_W * dt_s / effective_thermal_mass_J_per_K
-        self.state.temperature_K += dT_K
+        self.thermodynamic_state.temperature_K += dT_K
     
     def update_membrane_degradation(self, dt_s: float) -> None:
         """
@@ -275,14 +276,14 @@ class ElectrolysisReactor(Reactor):
         self.operating_hours_cumulative += dt_s / 3600.0
         
         base_deg_rate_per_s = 0.001 / (24 * 3600)  # base rate per second
-        current_factor = (self.current_density_A_per_m2 / self.spec.max_current_density_A_per_m2) ** 2
+        current_factor = (self.current_density_A_per_m2 / self.reactor_specification.max_current_density_A_per_m2) ** 2
         degradation_factor = np.exp(-base_deg_rate_per_s * current_factor * dt_s)
         self.membrane_degradation_factor *= degradation_factor
         self.membrane_degradation_factor = max(self.membrane_degradation_factor, 0.1)
         
         # Update hydration: assume full hydration if water concentration exceeds 55.5 mol/m³.
         water_mol = self.composition_mol.get(ResourceType.H2O, 0.0)
-        water_conc_mol_per_m3 = water_mol / self.spec.volume_m3
+        water_conc_mol_per_m3 = water_mol / self.reactor_specification.volume_m3
         hydration_target = min(1.0, water_conc_mol_per_m3 / 55.5)
         self.membrane_hydration += (hydration_target - self.membrane_hydration) * 0.1  # relaxation factor
     
@@ -313,10 +314,10 @@ class ElectrolysisReactor(Reactor):
             return {resource: 0.0 for resource in ResourceType}
         
         # --- 1. Determine Partial Pressures ---
-        V_m3 = self.spec.volume_m3
+        V_m3 = self.reactor_specification.volume_m3
         # Assume produced gases (H2 and O2) are accumulated in the headspace.
         total_gas_mol = self.composition_mol.get(ResourceType.H2, 0.0) + self.composition_mol.get(ResourceType.O2, 0.0)
-        T_K = self.state.temperature_K
+        T_K = self.thermodynamic_state.temperature_K
         p_total_Pa = total_gas_mol * constants.R * T_K / V_m3 if total_gas_mol > 0 else 1e5
         # Assume for water electrolysis: ~67% H2 and ~33% O2 by moles.
         p_H2_Pa = p_total_Pa * 0.67
@@ -330,11 +331,11 @@ class ElectrolysisReactor(Reactor):
         
         # --- 3. Determine Operating Current Density ---
         try:
-            target_current_density_A_per_m2 = 0.8 * self.spec.max_current_density_A_per_m2  # Increased from 0.5
+            target_current_density_A_per_m2 = 0.8 * self.reactor_specification.max_current_density_A_per_m2  # Increased from 0.5
         except AttributeError:
-            target_current_density_A_per_m2 = 0.8 * self.spec.max_current_density_A_per_m2
+            target_current_density_A_per_m2 = 0.8 * self.reactor_specification.max_current_density_A_per_m2
         
-        ramp_rate_A_per_m2_per_s = 0.5 * self.spec.max_current_density_A_per_m2  # Increased from 0.1
+        ramp_rate_A_per_m2_per_s = 0.5 * self.reactor_specification.max_current_density_A_per_m2  # Increased from 0.1
         if self.current_density_A_per_m2 < target_current_density_A_per_m2:
             self.current_density_A_per_m2 = min(self.current_density_A_per_m2 + ramp_rate_A_per_m2_per_s * dt_s,
                                                 target_current_density_A_per_m2)
@@ -343,19 +344,19 @@ class ElectrolysisReactor(Reactor):
                                                 target_current_density_A_per_m2)
         
         # --- 4. Power Calculation and Limiting ---
-        power_calc_W = V_cell_V * self.current_density_A_per_m2 * self.spec.electrode_area_m2
-        if power_calc_W > self.spec.max_power_W:
-            scaling_factor = np.sqrt(self.spec.max_power_W / power_calc_W)
+        power_calc_W = V_cell_V * self.current_density_A_per_m2 * self.reactor_specification.electrode_area_m2
+        if power_calc_W > self.reactor_specification.max_power_W:
+            scaling_factor = np.sqrt(self.reactor_specification.max_power_W / power_calc_W)
             self.current_density_A_per_m2 *= scaling_factor
             overpotentials = self.calculate_overpotentials(self.current_density_A_per_m2)
             total_overpotential_V = sum(overpotentials.values())
             V_cell_V = V_nernst_V + total_overpotential_V
-            power_calc_W = V_cell_V * self.current_density_A_per_m2 * self.spec.electrode_area_m2
+            power_calc_W = V_cell_V * self.current_density_A_per_m2 * self.reactor_specification.electrode_area_m2
         
         # --- 5. Reaction Production via Faraday's Law ---
         F_C_per_mol = constants.physical_constants['Faraday constant'][0]
-        n_H2_produced_mol = (self.current_density_A_per_m2 * self.spec.electrode_area_m2 * dt_s) / (2 * F_C_per_mol)
-        n_O2_produced_mol = (self.current_density_A_per_m2 * self.spec.electrode_area_m2 * dt_s) / (4 * F_C_per_mol)
+        n_H2_produced_mol = (self.current_density_A_per_m2 * self.reactor_specification.electrode_area_m2 * dt_s) / (2 * F_C_per_mol)
+        n_O2_produced_mol = (self.current_density_A_per_m2 * self.reactor_specification.electrode_area_m2 * dt_s) / (4 * F_C_per_mol)
         n_H2O_consumed_mol = 2 * n_O2_produced_mol
         logger.info(f"Electrolysis reaction changes: {n_H2O_consumed_mol / dt_s:.3f} mol/s H2O consumed, {n_H2_produced_mol / dt_s:.3f} mol/s H2 produced, {n_O2_produced_mol / dt_s:.3f} mol/s O2 produced")
         reaction_changes_mol_per_s = {
@@ -397,14 +398,14 @@ class ElectrolysisReactor(Reactor):
             Power consumption (W)
         """
         # For consistency, use the reactor state pressure and composition to determine gas partial pressures.
-        p_H2_Pa = self.state.pressure_Pa * 0.67
-        p_O2_Pa = self.state.pressure_Pa * 0.33
+        p_H2_Pa = self.thermodynamic_state.pressure_Pa * 0.67
+        p_O2_Pa = self.thermodynamic_state.pressure_Pa * 0.33
         V_nernst_V = self.calculate_nernst_voltage(p_H2_Pa, p_O2_Pa)
         overpotentials = self.calculate_overpotentials(self.current_density_A_per_m2)
         total_overpotential_V = sum(overpotentials.values())
         V_cell_V = V_nernst_V + total_overpotential_V
-        power_W = V_cell_V * self.current_density_A_per_m2 * self.spec.electrode_area_m2
-        return min(power_W, self.spec.max_power_W)
+        power_W = V_cell_V * self.current_density_A_per_m2 * self.reactor_specification.electrode_area_m2
+        return min(power_W, self.reactor_specification.max_power_W)
     
     # -------------------------------------------------------------------------
     # Startup and Shutdown Behavior
@@ -422,8 +423,8 @@ class ElectrolysisReactor(Reactor):
         """
         if self.operational_status == OperationalStatus.STANDBY:
             self.operational_status = OperationalStatus.STARTUP
-            ramp_steps = int(self.spec.startup_time_s)
-            target_current_density = 0.5 * self.spec.max_current_density_A_per_m2
+            ramp_steps = int(self.reactor_specification.startup_time_s)
+            target_current_density = 0.5 * self.reactor_specification.max_current_density_A_per_m2
             dt_step = 1.0  # seconds per step
             for _ in range(ramp_steps):
                 self.current_density_A_per_m2 += target_current_density / ramp_steps
@@ -443,7 +444,7 @@ class ElectrolysisReactor(Reactor):
         """
         if self.operational_status == OperationalStatus.RUNNING:
             self.operational_status = OperationalStatus.SHUTDOWN
-            ramp_steps = int(self.spec.shutdown_time_s)
+            ramp_steps = int(self.reactor_specification.shutdown_time_s)
             dt_step = 1.0
             for _ in range(ramp_steps):
                 self.current_density_A_per_m2 -= self.current_density_A_per_m2 / ramp_steps

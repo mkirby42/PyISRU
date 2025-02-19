@@ -1,13 +1,14 @@
 import pytest
 import logging
-from math import isclose
+from math import isclose, radians
 
 from py_isru.lib.storage_tank import TankSpecification
-from py_isru.lib.reactor import ResourceType
-from py_isru.lib.isru_plant import ISRUPlant, PlantSpecification, PlantStatus, ISRUPlantError, ISRUPlantErrorCode
+from py_isru.lib.reactor import ResourceType, OperationalStatus
+from py_isru.lib.isru_plant import ISRUPlant, PlantSpecification, ISRUPlantError, ISRUPlantErrorCode
 from py_isru.lib.sabatier_reactor import SabatierSpecification
 from py_isru.lib.electrolysis_reactor import ElectrolysisSpecification
 from py_isru.lib.power_system import SolarArraySpecification, SolarPanelSpecification, BatterySpecification, KrustySpecification
+from py_isru.lib.environment import MarsEnvironment, MarsEnvironmentSpecification
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, 
@@ -140,9 +141,32 @@ def dummy_plant_spec():
     )
 
 @pytest.fixture
-def isru_plant(dummy_plant_spec):
-    """Create an ISRUPlant instance using the dummy specification."""
-    return ISRUPlant(dummy_plant_spec)
+def mars_environment():
+    """Create a realistic Mars environment at Jezero Crater."""
+    return MarsEnvironment(
+        MarsEnvironmentSpecification(
+            # Jezero Crater coordinates: 18.4447°N, 77.4508°E
+            latitude_rad=radians(18.4447),
+            longitude_rad=radians(77.4508),
+            altitude_m=-2.5e3,  # Jezero is about 2.5km below Mars reference
+        )
+    )
+
+@pytest.fixture
+def isru_plant(dummy_plant_spec, mars_environment):
+    """Create an ISRUPlant instance using the dummy specification and Mars environment."""
+    return ISRUPlant(dummy_plant_spec, mars_environment)
+
+def initialize_tanks(plant: ISRUPlant, moles: float = 10.0) -> None:
+    """Helper function to initialize all tanks with resources.
+    
+    Args:
+        plant: The ISRU plant instance
+        moles: Amount of moles to add to each tank (default: 10.0)
+    """
+    for resource_type in ResourceType:
+        if resource_type in plant.tanks:
+            plant.tanks[resource_type].moles = moles
 
 # ---------------------------------------------------------------------------
 # Tests for ISRUPlant
@@ -150,57 +174,62 @@ def isru_plant(dummy_plant_spec):
 def test_plant_init(isru_plant):
     """Test that the plant initializes correctly."""
     logger.info(f"Plant state: {isru_plant.get_state()}")
-    assert isru_plant.get_status() == PlantStatus.STANDBY
-
+    assert isru_plant.get_status() == OperationalStatus.STANDBY
 
 def test_plant_start_stop(isru_plant):
     """Test that the plant can start and then shutdown correctly."""
-    # Add some initial resources to the tanks.
-    isru_plant.tanks[ResourceType.CO2].moles = 10.0
-    isru_plant.tanks[ResourceType.H2].moles = 10.0
-    isru_plant.tanks[ResourceType.O2].moles = 10.0
-    isru_plant.tanks[ResourceType.CH4].moles = 10.0
-    isru_plant.tanks[ResourceType.H2O].moles = 10.0
-    
-    assert isru_plant.get_status() == PlantStatus.STANDBY
+    initialize_tanks(isru_plant)
+    assert isru_plant.get_status() == OperationalStatus.STANDBY
     isru_plant.start()
-    assert isru_plant.get_status() == PlantStatus.RUNNING
+    assert isru_plant.get_status() == OperationalStatus.RUNNING
     isru_plant.shutdown()
-    assert isru_plant.get_status() == PlantStatus.STANDBY
+    assert isru_plant.get_status() == OperationalStatus.STANDBY
 
-def test_plant_step_and_status(isru_plant):
+def test_plant_step(isru_plant):
     """Test that after a simulation step, the plant time and metrics update."""
-    isru_plant.tanks[ResourceType.CO2].moles = 10.0
-    isru_plant.tanks[ResourceType.H2].moles = 10.0
-    isru_plant.tanks[ResourceType.O2].moles = 10.0
-    isru_plant.tanks[ResourceType.CH4].moles = 10.0
-    isru_plant.tanks[ResourceType.H2O].moles = 10.0
+    initialize_tanks(isru_plant)
     isru_plant.start()
     
     initial_time_s = isru_plant.get_state().time_elapsed_s
     isru_plant.step(60.0)  # 60 s step
     assert isru_plant.get_state().time_elapsed_s > initial_time_s
-    
-    # Get status report and verify key sections are present.
-    report = isru_plant.get_status_report()
-    assert report is not None
 
-def test_plant_emergency_mode(isru_plant):
+def test_plant_insufficient_power_emergency(isru_plant):
     """
     Test that if available power is insufficient, the plant transitions to EMERGENCY mode.
     For testing purposes, we monkey-patch the solar array output to return 0 W.
     """
-    isru_plant.tanks[ResourceType.CO2].moles = 10.0
-    isru_plant.tanks[ResourceType.H2].moles = 10.0
-    isru_plant.tanks[ResourceType.O2].moles = 10.0
-    isru_plant.tanks[ResourceType.CH4].moles = 10.0
-    isru_plant.tanks[ResourceType.H2O].moles = 10.0
+    initialize_tanks(isru_plant)
+    # Start plant
     isru_plant.start()
-    # Override solar array output.
+    
+    # Overrides
     isru_plant.solar_array.calculate_output = lambda: 0.0
     isru_plant.krusty.calculate_output = lambda: 0.0
     isru_plant.battery.calculate_output = lambda: 0.0
+    
+    # Run plant
     isru_plant.step(60.0)
-    logger.info(isru_plant.get_state())
+    
+    # Verify plant has correct error and is in EMERGENCY mode
     assert isru_plant.get_state().error.error_code == ISRUPlantErrorCode.INSUFFICIENT_POWER
-    assert isru_plant.get_status() == PlantStatus.EMERGENCY
+    assert isru_plant.get_status() == OperationalStatus.EMERGENCY
+
+def test_reactor_temperatures_update(isru_plant):
+    """Test that reactor temperatures are properly updated in the plant state."""
+    # Add resources with 4:1 H2:CO2 ratio for Sabatier reaction
+    initialize_tanks(isru_plant)
+    isru_plant.tanks[ResourceType.H2].moles = 40.0  # 4:1 ratio with CO2
+    
+    # Start plant and run for a bit
+    isru_plant.start()
+    isru_plant.step(60.0)
+    
+    # Get state and verify temperatures
+    state = isru_plant.get_state()
+    assert state.sabatier_temperature_K == isru_plant.sabatier.thermodynamic_state.temperature_K
+    assert state.electrolysis_temperature_K == isru_plant.electrolysis.thermodynamic_state.temperature_K
+    
+    # Verify temperatures are non-zero (reactors should be running)
+    assert state.sabatier_temperature_K > 0
+    assert state.electrolysis_temperature_K > 0

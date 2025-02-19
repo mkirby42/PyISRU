@@ -181,6 +181,29 @@ class GasProperties:
         """
         return reference_visc_Pa_s * (temperature_K / reference_temp_K) ** 1.5 * ((reference_temp_K + 110) / (temperature_K + 110))
 
+
+kinetics_main = ReactionKinetics(
+    rate_constant_forward_1_s_inv=1e3,
+    activation_energy_J_per_mol=80e3,
+    reaction_order={"CO2": 1, "H2": 4}
+)
+kinetics_rwgs = ReactionKinetics(
+    rate_constant_forward_1_s_inv=5e2,
+    activation_energy_J_per_mol=90e3,
+    reaction_order={"CO2": 1, "H2": 1}
+)
+kinetics_methanation = ReactionKinetics(
+    rate_constant_forward_1_s_inv=8e2,
+    activation_energy_J_per_mol=85e3,
+    reaction_order={"CO": 1, "H2": 3}
+)
+sabatier_reactor_kinetics_dict = {
+    "main": kinetics_main,
+    "rwgs": kinetics_rwgs,
+    "methanation": kinetics_methanation
+}
+
+
 def cp_for_species(species: str, temperature_K: float) -> float:
     """
     Return the heat capacity at constant pressure (Cp) for a given species.
