@@ -60,3 +60,4 @@ seaborn==0.13.2
 # tzdata==2024.2
 # wcwidth==0.2.13
 # Werkzeug==3.1.3
+gunicorn
