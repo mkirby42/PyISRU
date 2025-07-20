@@ -82,19 +82,6 @@ def images(filename):
     return send_from_directory("static/images", filename)
 
 
-@app.route("/dashboard")
-def dashboard():
-    return render_template("dashboard.html")
-
-
-@app.route("/run_simulation", methods=["POST"])
-def run_simulation_route():
-    sim_speed = float(request.form.get("sim_speed", 1.0))
-    sim_duration = float(request.form.get("sim_duration", 0.1))
-    simulation_data = simulation.run_simulation(sim_speed, sim_duration)
-    return jsonify(simulation_data)
-
-
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8000, debug=False)
     # app.run(debug=True)
