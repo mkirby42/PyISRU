@@ -28,6 +28,10 @@ cleanup_container "cloudflared"
 echo -e "${YELLOW}Ensuring flask-net network exists...${NC}"
 docker network create flask-net 2>/dev/null || echo -e "${GREEN}Network flask-net already exists${NC}"
 
+# Unlock keychain for Docker build
+echo -e "${YELLOW}Unlocking keychain...${NC}"
+security -v unlock-keychain ~/Library/Keychains/login.keychain-db
+
 # Rebuild flask app image
 echo -e "${YELLOW}Rebuilding flask app image...${NC}"
 if docker build -t pyisru .; then

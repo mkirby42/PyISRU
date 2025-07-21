@@ -1,33 +1,121 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="dashboard-container">
-    <h2>Simulation Dashboard</h2>
-    <div class="controls">
-        <label for="sim-speed">Simulation Speed:</label>
-        <input type="number" id="sim-speed" value="1.0" step="0.1" min="0.1">
-        <label for="sim-duration">Simulation Duration (years):</label>
-        <input type="number" id="sim-duration" value="0.1" step="0.1" min="0.1">
-        <button id="run-simulation">Run Simulation</button>
-        <button id="pause-simulation">Pause</button>
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">MARS ISRU MISSION CONTROL</h1>
+        <p class="dashboard-subtitle">In-Situ Resource Utilization Plant</p>
     </div>
-    <div class="visualization-controls">
-        <label for="visualization-select">Select Visualization:</label>
-        <select id="visualization-select">
-            <option value="tank_levels">Storage Tank Levels</option>
-            <option value="power_demand">Power Demand</option>
-            <option value="battery_level">Battery Level</option>
-            <option value="production_metrics">Production Metrics</option>
-            <option value="environmental_conditions">Environmental Conditions</option>
-            <option value="efficiency_metrics">Efficiency Metrics</option>
-            <option value="power_generation">Power Generation</option>
-        </select>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-card">
+            <div class="status-value" id="power-status">0 kW</div>
+            <div class="status-label">Power Available</div>
+        </div>
+        <div class="status-card">
+            <div class="status-value" id="fuel-status">0 kg</div>
+            <div class="status-label">CH₄ Fuel</div>
+        </div>
+        <div class="status-card">
+            <div class="status-value" id="oxygen-status">0 kg</div>
+            <div class="status-label">O₂ Oxidizer</div>
+        </div>
+        <div class="status-card">
+            <div class="status-value" id="mission-time">00:00:00</div>
+            <div class="status-label">Mission Time</div>
+        </div>
+        <div class="status-card">
+            <div class="status-value" id="system-status">STANDBY</div>
+            <div class="status-label">System Status</div>
+        </div>
     </div>
-    <div id="visualization"></div>
-    <div class="logs">
-        <h3>Simulation Logs</h3>
-        <pre id="logs-container"></pre>
+
+    <!-- Control Grid -->
+    <div class="control-grid">
+        <!-- Mission Controls -->
+        <div class="control-panel">
+            <h3 class="panel-title">Mission Parameters</h3>
+            
+            <div class="control-group">
+                <label class="control-label" for="sim-speed">Simulation Speed Multiplier</label>
+                <input type="number" id="sim-speed" class="control-input" value="1.0" step="0.1" min="0.1" max="10">
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label" for="sim-duration">Mission Duration (Mars Years)</label>
+                <input type="number" id="sim-duration" class="control-input" value="0.1" step="0.1" min="0.1" max="2">
+            </div>
+            
+            <div class="action-buttons">
+                <button id="run-simulation" class="btn">Launch Mission</button>
+                <button id="pause-simulation" class="btn btn-secondary" disabled>Abort Mission</button>
+            </div>
+        </div>
+
+        <!-- Visualization Controls -->
+        <div class="control-panel">
+            <h3 class="panel-title">Telemetry Display</h3>
+            
+            <div class="control-group">
+                <label class="control-label" for="visualization-select">Select Data Stream</label>
+                <select id="visualization-select" class="control-select">
+                    <option value="tank_levels">Propellant Storage Levels</option>
+                    <option value="power_demand">Power System Analysis</option>
+                    <option value="battery_level">Energy Storage Status</option>
+                    <option value="production_metrics">Production Rate Metrics</option>
+                    <option value="environmental_conditions">Mars Environmental Data</option>
+                    <option value="efficiency_metrics">System Efficiency</option>
+                    <option value="power_generation">Solar Array Performance</option>
+                </select>
+            </div>
+            
+            <div class="viz-controls">
+                <div class="control-group">
+                    <label class="control-label">Display Mode</label>
+                    <div style="display: flex; gap: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="display-mode" value="realtime" checked>
+                            <span>Real-time</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="display-mode" value="historical">
+                            <span>Historical</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualization Panel -->
+    <div class="visualization-panel">
+        <div class="visualization-header">
+            <h3 class="viz-title">Telemetry Data Stream</h3>
+            <div class="viz-controls">
+                <button id="fullscreen-viz" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                    Fullscreen
+                </button>
+                <button id="export-data" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                    Export Data
+                </button>
+            </div>
+        </div>
+        <div id="visualization"></div>
+    </div>
+
+    <!-- Logs Panel -->
+    <div class="logs-panel">
+        <div class="logs-header">
+            <span>System Console</span>
+            <span style="margin-left: auto; font-size: 0.8rem;">Live Feed</span>
+        </div>
+        <pre id="logs-container">Mars ISRU Control System v2.1.0
+Initializing subsystems...
+All systems nominal. Awaiting mission parameters...</pre>
     </div>
 </div>
+
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}
