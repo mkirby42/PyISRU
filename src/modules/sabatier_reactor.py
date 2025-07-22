@@ -22,9 +22,10 @@ class SabatierReactorModule(BaseModule):
                  name: str = "SabatierReactor",
                  target_ch4_rate_kg_hr: float = 460.0,  # ~11,000 kg/day per PRD
                  operating_temperature_k: float = 623.0,  # 350°C optimal
-                 operating_pressure_kpa: float = 300.0):  # 3 bar
+                 operating_pressure_kpa: float = 300.0,  # 3 bar
+                 ignore_temp_overage: bool = False):
         
-        super().__init__(name, priority=2)  # Critical for fuel production
+        super().__init__(name, priority=2, ignore_temp_overage=ignore_temp_overage)
         
         # Design parameters
         self.target_ch4_rate_kg_hr = target_ch4_rate_kg_hr
@@ -117,7 +118,7 @@ class SabatierReactorModule(BaseModule):
         self._update_thermal_state(plant_state, reaction_rates, dt_seconds)
         
         # Update statistics
-        self._update_statistics(products_produced, dt_seconds)
+        self._update_statistics(products_produced, dt_seconds, plant_state)
         
         # Check maintenance needs
         self._check_maintenance_schedule(plant_state)
@@ -355,18 +356,17 @@ class SabatierReactorModule(BaseModule):
         else:
             self.current_pressure_kpa = env.atmospheric_pressure_pa / 1000.0
     
-    def _update_statistics(self, products: Dict[str, float], dt_seconds: float):
+    def _update_statistics(self, products: Dict[str, float], dt_seconds: float, plant_state):
         """Update production statistics."""
         
         self.total_ch4_produced_kg += products.get("CH4", 0.0)
         self.total_h2o_produced_kg += products.get("H2O", 0.0)
         
         # Update plant-wide totals
-        if hasattr(self, '_last_plant_state'):
-            self._last_plant_state.update_production_totals(
-                ch4_produced_kg=products.get("CH4", 0.0),
-                energy_consumed_kwh=self.power_allocated_kw * (dt_seconds / 3600.0)
-            )
+        plant_state.update_production_totals(
+            ch4_produced_kg=products.get("CH4", 0.0),
+            energy_consumed_kwh=self.power_allocated_kw * (dt_seconds / 3600.0)
+        )
         
         # Catalyst cycle counting
         if self.current_ch4_rate_kg_hr > 0:

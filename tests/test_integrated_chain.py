@@ -8,14 +8,13 @@ import logging
 import sys
 import os
 
-# Add src to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+# Path is handled by conftest.py
 
-from src.simulation_engine import SimulationEngine, SimulationConfig
-from src.modules.environment import EnvironmentModule
-from src.modules.power import PowerModule
-from src.modules.atmosphere_intake import AtmosphereIntakeModule
-from src.modules.sabatier_reactor import SabatierReactorModule
+from simulation_engine import SimulationEngine, SimulationConfig
+from modules.environment import EnvironmentModule
+from modules.power import PowerModule
+from modules.atmosphere_intake import AtmosphereIntakeModule
+from modules.sabatier_reactor import SabatierReactorModule
 
 # Configure logging
 logging.basicConfig(

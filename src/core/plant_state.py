@@ -30,12 +30,16 @@ class PlantState:
     def __init__(self):
         # Initialize material stores for ISRU process
         self.materials: Dict[str, MaterialStore] = {
-            "H2O": MaterialStore("Water", capacity_kg=50000),  # 50 tonnes capacity
-            "H2": MaterialStore("Hydrogen", capacity_kg=10000),  # 10 tonnes capacity  
-            "O2": MaterialStore("Oxygen", capacity_kg=1000000),  # 1000 tonnes capacity
-            "CO2": MaterialStore("Carbon Dioxide", capacity_kg=20000),  # 20 tonnes capacity
-            "CH4": MaterialStore("Methane", capacity_kg=400000),  # 400 tonnes capacity
+            "H2O": MaterialStore("Water", capacity_kg=500000),    # 500 tonnes
+            "H2": MaterialStore("Hydrogen", capacity_kg=100000),  # 100 tonnes  
+            "O2": MaterialStore("Oxygen", capacity_kg=2000000),   # 2000 tonnes
+            "CO2": MaterialStore("Carbon Dioxide", capacity_kg=200000),  # 200 tonnes
+            "CH4": MaterialStore("Methane", capacity_kg=1000000), # 1000 tonnes
         }
+        
+        # Prime the system with initial water supply (from Earth or extracted ice)
+        # This is needed to start the electrolysis → hydrogen → fuel production chain
+        self.materials["H2O"].store(10000.0)  # Start with 10 tonnes of water
         
         # Power management
         self.power_budget = PowerBudget()

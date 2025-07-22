@@ -16,8 +16,8 @@ class EnvironmentModule(BaseModule):
     - Weather events (dust storms)
     """
     
-    def __init__(self, name: str = "Environment"):
-        super().__init__(name, priority=1)  # High priority - other modules depend on this
+    def __init__(self, name: str = "Environment", ignore_temp_overage: bool = False):
+        super().__init__(name, priority=1, ignore_temp_overage=ignore_temp_overage)  # High priority - other modules depend on this
         
         # Mars orbital/rotational parameters
         self.mars_solar_constant = 590.0  # W/m² at mean distance

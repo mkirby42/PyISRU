@@ -34,10 +34,11 @@ class BaseModule(ABC):
     Provides common functionality for status management, power handling, and simulation interface.
     """
     
-    def __init__(self, name: str, priority: int = 3):
+    def __init__(self, name: str, priority: int = 3, ignore_temp_overage: bool = False):
         self.name = name
         self.priority = priority  # 1=critical, 5=deferrable
         self.status = ModuleStatus.OK
+        self.ignore_temp_overage = ignore_temp_overage  # Safety override flag
         
         # Operating state
         self.current_temperature_k: float = 273.0  # Room temp default
@@ -109,10 +110,14 @@ class BaseModule(ABC):
         # Temperature check
         if (self.limits.max_temperature_k and 
             self.current_temperature_k > self.limits.max_temperature_k):
-            logger.error(f"{self.name}: Temperature {self.current_temperature_k:.1f}K exceeds "
-                        f"max {self.limits.max_temperature_k:.1f}K - SHUTDOWN")
-            self._initiate_shutdown(plant_state.current_time, "Temperature overage")
-            return False
+            if self.ignore_temp_overage:
+                logger.warning(f"{self.name}: Temperature {self.current_temperature_k:.1f}K exceeds "
+                             f"max {self.limits.max_temperature_k:.1f}K - OVERRIDE ACTIVE (continuing operation)")
+            else:
+                logger.error(f"{self.name}: Temperature {self.current_temperature_k:.1f}K exceeds "
+                            f"max {self.limits.max_temperature_k:.1f}K - SHUTDOWN")
+                self._initiate_shutdown(plant_state.current_time, "Temperature overage")
+                return False
         
         # Temperature warning (soft limit)
         soft_temp_limit = (self.limits.max_temperature_k * self.limits.safety_temp_margin 

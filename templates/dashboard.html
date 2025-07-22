@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
+<script>
+// Add dashboard-specific body class for styling
+document.body.classList.add('dashboard-page');
+</script>
 <div class="dashboard-container">
     <!-- Header -->
     <div class="dashboard-header">
@@ -49,8 +53,52 @@
             
             <div class="action-buttons">
                 <button id="run-simulation" class="btn">Launch Mission</button>
-                <button id="pause-simulation" class="btn btn-secondary" disabled>Abort Mission</button>
+                <button id="stop-simulation" class="btn btn-secondary" disabled>Stop Mission</button>
+                <button id="reset-simulation" class="btn btn-tertiary">Reset System</button>
             </div>
+        </div>
+
+        <!-- System Configuration -->
+        <div class="control-panel">
+            <h3 class="panel-title">System Configuration</h3>
+            
+            <div class="control-group">
+                <label class="control-label" for="solar-array-area">Solar Array Area (m²)</label>
+                <input type="number" id="solar-array-area" class="control-input" value="50000" step="1000" min="10000" max="200000">
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label" for="battery-capacity">Battery Capacity (kWh)</label>
+                <input type="number" id="battery-capacity" class="control-input" value="20000" step="1000" min="5000" max="100000">
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label" for="co2-intake-rate">CO₂ Intake Rate (kg/hr)</label>
+                <input type="number" id="co2-intake-rate" class="control-input" value="100" step="10" min="50" max="500">
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label" for="h2-production-rate">H₂ Production Rate (kg/hr)</label>
+                <input type="number" id="h2-production-rate" class="control-input" value="10" step="1" min="5" max="50">
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label" for="ch4-production-rate">CH₄ Production Rate (kg/hr)</label>
+                <input type="number" id="ch4-production-rate" class="control-input" value="46.0" step="1.0" min="20" max="200">
+            </div>
+            
+            <!-- Safety Override Section -->
+            <div class="control-group" style="margin-top: 20px; padding-top: 15px; border-top: 2px solid var(--warning-yellow);">
+                <label class="control-label" style="color: var(--warning-yellow); font-weight: bold;">⚠️ Safety Overrides</label>
+                <div style="margin-top: 8px;">
+                    <input type="checkbox" id="ignore-temp-overage" style="margin-right: 8px;">
+                    <label for="ignore-temp-overage" style="color: var(--warning-yellow); font-size: 0.9rem;">
+                        Ignore temperature safety limits (⚠️ Experimental)
+                    </label>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
         </div>
 
         <!-- Visualization Controls -->
@@ -108,11 +156,12 @@
     <div class="logs-panel">
         <div class="logs-header">
             <span>System Console</span>
-            <span style="margin-left: auto; font-size: 0.8rem;">Live Feed</span>
+            <span style="margin-left: auto; font-size: 0.8rem;">Live Mission Telemetry</span>
         </div>
-        <pre id="logs-container">Mars ISRU Control System v2.1.0
-Initializing subsystems...
-All systems nominal. Awaiting mission parameters...</pre>
+        <pre id="logs-container">Initializing Mars ISRU Control System...
+Loading subsystem diagnostics...
+Preparing telemetry interface...
+Ready for mission configuration and launch.</pre>
     </div>
 </div>
 

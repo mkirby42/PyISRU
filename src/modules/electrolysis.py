@@ -22,9 +22,10 @@ class ElectrolysisModule(BaseModule):
                  name: str = "Electrolysis",
                  target_h2_rate_kg_hr: float = 100.0,  # Target H₂ production rate
                  operating_temperature_k: float = 353.0,  # 80°C optimal for PEM
-                 operating_pressure_kpa: float = 3000.0):  # 30 bar for efficiency
+                 operating_pressure_kpa: float = 3000.0,  # 30 bar for efficiency
+                 ignore_temp_overage: bool = False):
         
-        super().__init__(name, priority=2)  # Important for H₂ supply
+        super().__init__(name, priority=2, ignore_temp_overage=ignore_temp_overage)
         
         # Design parameters
         self.target_h2_rate_kg_hr = target_h2_rate_kg_hr
@@ -115,7 +116,7 @@ class ElectrolysisModule(BaseModule):
         self._update_thermal_state(plant_state, production_rates, dt_seconds)
         
         # Update statistics
-        self._update_statistics(products_produced, dt_seconds)
+        self._update_statistics(products_produced, dt_seconds, plant_state)
         
         # Check maintenance needs
         self._check_maintenance_schedule(plant_state)
@@ -369,12 +370,18 @@ class ElectrolysisModule(BaseModule):
                 self.current_pressure_kpa - depressure_rate * dt_seconds
             )
     
-    def _update_statistics(self, products: Dict[str, float], dt_seconds: float):
+    def _update_statistics(self, products: Dict[str, float], dt_seconds: float, plant_state):
         """Update production statistics."""
         
         self.total_h2_produced_kg += products.get("H2", 0.0)
         self.total_o2_produced_kg += products.get("O2", 0.0)
         self.total_energy_consumed_kwh += self.power_allocated_kw * (dt_seconds / 3600.0)
+        
+        # Update plant-wide totals
+        plant_state.update_production_totals(
+            o2_produced_kg=products.get("O2", 0.0),
+            energy_consumed_kwh=self.power_allocated_kw * (dt_seconds / 3600.0)
+        )
         
         # Electrode cycle counting
         if self.current_h2_rate_kg_hr > 0:

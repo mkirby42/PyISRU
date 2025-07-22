@@ -17,9 +17,10 @@ class PowerModule(BaseModule):
                  solar_array_area_m2: float = 10000.0,
                  panel_efficiency: float = 0.20,
                  battery_capacity_kwh: float = 2000.0,
-                 battery_min_soc: float = 0.20):
+                 battery_min_soc: float = 0.20,
+                 ignore_temp_overage: bool = False):
         
-        super().__init__(name, priority=1)  # Critical infrastructure
+        super().__init__(name, priority=1, ignore_temp_overage=ignore_temp_overage)  # Critical infrastructure
         
         # Solar panel configuration
         self.solar_array_area_m2 = solar_array_area_m2
@@ -252,17 +253,27 @@ class PowerModule(BaseModule):
         """Update thermal state of power systems."""
         env = plant_state.environment
         
-        # Simplified thermal model
-        # Power electronics heat up during operation, cool down to ambient
-        
+        # Simplified thermal model with scaling for large systems
         # Heat generation from power conversion (losses)
         power_losses_kw = (self.solar_power_kw * 0.05 +  # 5% inverter losses
                           abs(self.battery_power_kw) * 0.05)  # 5% battery conversion losses
         
-        # Thermal balance (simplified)
-        # In reality, would need thermal mass, heat capacity, etc.
-        thermal_rise_k = power_losses_kw * 2.0  # 2K rise per kW losses (simplified)
-        self.current_temperature_k = env.ambient_temperature_k + thermal_rise_k
+        # Thermal coefficient decreases with system size (economies of scale in cooling)
+        # Large systems have proportionally better heat dissipation
+        size_factor = self.solar_array_area_m2 / 10000.0  # Normalize by 10,000 m²
+        thermal_coeff = max(0.1, 2.0 / (1.0 + size_factor * 0.1))  # Scales down for large systems
+        
+        # Base temperature rise from losses
+        thermal_rise_k = power_losses_kw * thermal_coeff
+        
+        # Heat dissipation proportional to temperature difference (basic cooling)
+        temp_diff = max(0, self.current_temperature_k - env.ambient_temperature_k)
+        cooling_factor = 0.02 * power_losses_kw / max(1.0, power_losses_kw / 1000.0)  # More cooling for larger systems
+        heat_dissipation_k = temp_diff * cooling_factor
+        
+        # Net temperature = ambient + thermal rise - heat dissipation
+        target_temp = env.ambient_temperature_k + thermal_rise_k - heat_dissipation_k
+        self.current_temperature_k = max(env.ambient_temperature_k, target_temp)
     
     def get_power_summary(self) -> Dict[str, Any]:
         """Get comprehensive power system status."""

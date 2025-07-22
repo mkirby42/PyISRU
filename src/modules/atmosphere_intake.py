@@ -17,9 +17,10 @@ class AtmosphereIntakeModule(BaseModule):
                  name: str = "AtmosphereIntake",
                  target_flow_rate_kg_hr: float = 1000.0,
                  compression_ratio: float = 20.0,
-                 filter_efficiency: float = 0.95):
+                 filter_efficiency: float = 0.95,
+                 ignore_temp_overage: bool = False):
         
-        super().__init__(name, priority=2)  # Important for ISRU process
+        super().__init__(name, priority=2, ignore_temp_overage=ignore_temp_overage)  # Important for ISRU process
         
         # Design parameters
         self.target_flow_rate_kg_hr = target_flow_rate_kg_hr  # Target CO₂ intake rate

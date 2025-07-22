@@ -8,12 +8,11 @@ import logging
 import sys
 import os
 
-# Add src to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+# Path is handled by conftest.py
 
-from src.simulation_engine import SimulationEngine, SimulationConfig
-from src.modules.environment import EnvironmentModule
-from src.modules.power import PowerModule
+from simulation_engine import SimulationEngine, SimulationConfig
+from modules.environment import EnvironmentModule
+from modules.power import PowerModule
 
 # Configure logging
 logging.basicConfig(
@@ -102,7 +101,7 @@ def test_power_consumption():
     sim.add_module(power_module)
     
     # Simulate some power loads
-    from src.core.power_budget import PowerRequest
+    from core.power_budget import PowerRequest
     
     # Add fake power requests to simulate ISRU plant load
     class MockModule:
@@ -177,7 +176,7 @@ def test_dust_storm_scenario():
     print(f"Injected dust storm: 70% opacity for 3 sols")
     
     # Add steady power load
-    from src.core.power_budget import PowerRequest
+    from core.power_budget import PowerRequest
     steady_load = PowerRequest("ISRU_Plant", 600.0, min_power_kw=100.0, priority=2)
     
     # Run for 5 sols
@@ -228,7 +227,7 @@ def test_power_shortage():
     sim.add_module(power_module)
     
     # Add heavy loads that exceed capacity
-    from src.core.power_budget import PowerRequest
+    from core.power_budget import PowerRequest
     heavy_loads = [
         PowerRequest("Electrolyzer", 800.0, min_power_kw=100.0, priority=2),
         PowerRequest("Sabatier", 600.0, min_power_kw=50.0, priority=2),

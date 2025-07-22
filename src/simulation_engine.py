@@ -267,6 +267,15 @@ class SimulationEngine:
         self.is_running = False
         logger.info("Simulation stopped")
     
+    def step(self) -> Dict[str, Any]:
+        """Execute one simulation timestep and return results."""
+        if not self.is_running:
+            self.is_running = True
+            self.simulation_steps = 0
+            
+        step_result = self._execute_timestep()
+        return step_result
+    
     def get_current_status(self) -> Dict[str, Any]:
         """Get current simulation status."""
         return {
