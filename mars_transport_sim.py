@@ -382,16 +382,16 @@ def optimize_for_dual_goals():
     # Parameter bounds: [min, max] for each parameter  
     # Realistic ranges for achieving 5000 people efficiently
     bounds = [
-        (1, 1),      # crew_line_capacity - realistic industrial scale
-        (1, 1),      # cargo_line_capacity - realistic industrial scale
-        (1, 2),     # tanker_line_capacity - enough fuel production
-        (1, 6),       # crew_build_time_months - achievable build times
-        (1, 6),       # cargo_build_time_months - achievable build times
-        (1, 6),       # tanker_build_time_months - simpler tankers build faster
-        (100, 150),   # n_people_per_ship - reasonable ship sizes
-        (80, 150),    # cargo_mass_per_ship - reasonable cargo capacity
-        (80, 150),    # fuel_per_tanker - reasonable tanker capacity
-        (1400, 1600), # fuel_per_mars_mission - realistic fuel needs
+        (1, 3),      # crew_line_capacity - realistic industrial scale
+        (1, 3),      # cargo_line_capacity - realistic industrial scale
+        (1, 3),     # tanker_line_capacity - enough fuel production
+        (0.01, 1),       # crew_build_time_months - achievable build times
+        (0.01, 1),       # cargo_build_time_months - achievable build times
+        (0.01, 1),       # tanker_build_time_months - simpler tankers build faster
+        (20, 100),   # n_people_per_ship - reasonable ship sizes
+        (80, 120),    # cargo_mass_per_ship - reasonable cargo capacity
+        (100, 150),    # fuel_per_tanker - reasonable tanker capacity
+        (1600, 1601), # fuel_per_mars_mission - realistic fuel needs
     ]
     
     def objective_wrapper(param_vector):

@@ -56,7 +56,23 @@ Space X Goal fleet size: 1,000–2,000 Starships
 Mars Synodic Period: 780 days
 
 ## Fleet Size and Base Buildup Timeline
-Assuming 100 people per crew ship, 100 tons per cargo ship, yearly production rate of 15, 35, and 50 crew, cargo, and tanker ships respectively, a tanker turnaround time of 7 days, a tanker fuel load of 100 tons, and a crew and cargo ship fuel need of 1500 tons and mission lifespans of 10, 10, and 20 missions respectively, the we can see that we will accrew a a fleet size of  
+Parameters 
+40 people per crew ship
+100 tons per cargo ship
+2 month lead time for crew ship
+1 month lead time for cargo ship and tanker ships
+1 production line for crew ship
+4 production lines for cargo ship
+3 production lines for tanker ship
+7 day tanker turnaround time
+150 tons per tanker mission to LEO
+1600 tons of fuel for a crew or cargo ship mission to Mars
+Crew and cargo ship lifespan of 20 missions
+Tanker ship lifespan of 50 missions
+
+6 launch windows or 12.8 years to reach 6240 people and 123900 tons of cargo to Mars
+
+Not considering the infrastructure needed to support the fuel depot
 
 # Mars Transport Simulation Model
 
@@ -221,3 +237,50 @@ Where:
 - Launch windows occur every \( \Delta = 780 \) days  
 - Daily operations track construction, fuel delivery, and return scheduling  
 - This model assumes instant refueling at Mars for return trips with sufficient ISRU fuel production.
+
+
+7. Interactive Simulation Tool
+
+To support planning and exploration of Mars settlement logistics, we developed an interactive dashboard using Python, Dash, and Plotly. The tool simulates the entire Mars transport architecture with customizable parameters:
+
+Key Features
+
+Adjustable parameters for ship capacities, build timelines, production capacities, fuel logistics, and ship lifespans
+
+Simulation of end-to-end fleet production, launch scheduling, fuel depot usage, and ISRU demand
+
+Tracks:
+
+People and cargo delivered to Mars
+
+Fleet composition and ship availability
+
+Fuel levels in LEO depot and Mars return demand
+
+Generates five interactive time-series charts
+
+Displays three quarterly-updated data tables:
+
+Production and Fleet Status
+
+Launch Window Operations
+
+Mars Settlement Growth
+
+Dashboard Technologies
+
+Dash: Framework for building analytical web apps in Python
+
+Plotly: Interactive charts for deployment timelines, fleet status, and fuel supply/demand
+
+Pandas: Time-series tracking of system state
+
+Use Cases
+
+Explore tradeoffs between fleet size and mission cadence
+
+Identify bottlenecks in production vs fuel availability
+
+Understand sensitivity of base buildup timeline to parameter changes
+
+Validate long-term sustainability of ISRU-based return architecture
