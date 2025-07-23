@@ -5,7 +5,13 @@
 {% block content %}
 <div class="post-grid">
     {% for post in posts %}
-    <a href="{{ post.medium_link if post.medium_link else url_for('post', filename=post.filename) }}" target="_blank" class="post-card">
+    {% if post.get('is_app') %}
+        <a href="{{ post.app_url }}" class="post-card app-card">
+    {% elif post.medium_link %}
+        <a href="{{ post.medium_link }}" target="_blank" class="post-card">
+    {% else %}
+        <a href="{{ url_for('post', filename=post.filename) }}" class="post-card">
+    {% endif %}
         {% if post.image %}
         <div class="post-image">
             <img src="{{ url_for('static', filename='images/' + post.image) }}" alt="{{ post.title }}">

@@ -153,6 +153,24 @@ header .subtitle a {
     margin: 0;
 }
 
+/* App card specific styles */
+.app-card {
+    display: block;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+    color: inherit;
+}
+
+.app-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
+}
+
 .post-content {
     max-width: 800px;
     margin: 40px auto;
