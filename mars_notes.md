@@ -9,6 +9,10 @@ Include:
 	•	Starship cargo capacity and turnaround window
 	•	Graphs showing fleet size vs years to operational base
 
+Post 1.5:
+Formalized modeling of transfer
+
+
 Post 2:
 Focus:
 	•	Technologies: Sabatier, water electrolysis, atmospheric capture, regolith mining

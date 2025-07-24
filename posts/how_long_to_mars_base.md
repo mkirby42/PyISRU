@@ -14,9 +14,7 @@ Research like Jim’s, done on Mars, is likely to accelerate and enable the furt
 
 Scaling the Outpost
 
-Settling a sizeable scientific and engineering outpost on Mars will require massive logistical support from Earth. To estimate infrastructure needs, I’m borrowing an analogy: the USS Gerald R. Ford (CVN-78) aircraft carrier. Aircraft carriers are large vessels capable of supporting thousands of people and tons of equipment. They’re also relatively self-sufficient for limited periods of time, with extensive onboard fuel and food storage.
-
-The Ford supports 4,600 personnel with a displacement of 101,000 tons—roughly 22 tons per person. The analogy holds because much of the mass onboard (aircraft, weapons, reactors) can be reimagined as life support, ISRU systems, and scientific equipment. Assuming a Martian research outpost of 5,000 people, we estimate a target deployment mass of 110,000 tons.
+Settling a sizeable scientific and engineering outpost on Mars will require massive logistical support from Earth. To get a rough sense of the infrastructure required, I’m borrowing an imperfect but illustrative analogy: the USS Gerald R. Ford (CVN-78) aircraft carrier. The Ford supports 4,600 personnel and displaces 101,000 tons—about 22 tons per person. Of course, much of that mass is dedicated to aircraft, weapons systems, and nuclear propulsion. But for the purposes of estimating what it takes to support thousands of people in a self-contained environment, that “extra stuff” serves as a stand-in for what we’ll need on Mars: life support, ISRU systems, energy storage, radiation shielding, scientific equipment, and more. So, if we imagine a Martian research outpost supporting 5,000 people, a rough target deployment mass of 110,000 tons seems reasonable.
 
 ⸻
 
@@ -24,7 +22,7 @@ The SpaceX Architecture
 
 The Mars architecture outlined by SpaceX envisions multiple tanker-class Starships ferrying fuel to a low Earth orbit (LEO) depot. These tankers can launch more or less continuously (aside from some turnaround time), since they only fly to LEO and back.
 
-Crew and cargo-class ships will launch and refuel at the depot. Every 780 days—a Martian synodic period—a growing flotilla of these ships will depart for Mars. The journey takes roughly 250 days. Upon landing on the Martian surface, the ships will be refueled by In-Situ Resource Utilization (ISRU) plants, then wait approximately 18 months for the next return window. After the 250-day trip back to Earth, the ships can be refurbished and added back into the fleet—alongside newly produced vehicles.
+Crew and cargo-class ships will launch and refuel at the depot. Every 780 days—a Martian synodic period—a growing flotilla of these ships will depart for Mars. The journey takes roughly 250 days. Upon landing on the Martian surface, the ships will be refueled by In-Situ Resource Utilization (ISRU) plants, then wait approximately 18 months for the next return window. After the 250 day trip back to Earth, the ships can be refurbished and added back into the fleet—alongside newly produced vehicles.
 
 This raises several questions:
 	•	How many ships will be needed to transport people and equipment to Mars?
@@ -71,9 +69,9 @@ Here’s how the fleet grows across 25 years of continuous shipbuilding and laun
 ![Fleet Size](/static/images/fleet_size.png)
 
 Figure 1: Available Fleet Size.
-Cargo ships (green) dominate the fleet composition due to their higher production line capacity and shorter build times. Crew ships (blue) grow more slowly, constrained by a single production line. Tankers (orange) cycle rapidly but stabilize at a relatively flat curve, bounded by their mission lifespan.
+Cargo ships (green) dominate the fleet composition due to their higher production line capacity and shorter build times. Crew ships (blue) grow more slowly, constrained by a single production line. Tankers (orange) cycle rapidly but stabilize at a relatively flat 35 ships, bounded by their mission lifespan.
 
-Notice the sharp drops every 780 days—these are the Mars launch windows, when available ships are dispatched en masse to Mars.
+Notice the sharp drops in crew and cargo ship numbers every 780 days—these are the Mars launch windows, when available ships are dispatched en masse to Mars. The first launch window sees a fleet of 13 crew and 101 cargo ships using 182,400 tons of fuel. This initial group will transport 520 people and 10,100 tons of cargo to the Martian surface. By the sixth launch window the fleet has grown to 39 crew and 312 cargo ships using 561,600 tons of fuel. The first group of returning ships will need 182,400 tons of fuel to return to Earth. Splitting this in to the 3.54:1 ratio of oxygen to methane fuel ratios we get 142,100 t of LOX and 40,200 t of CH4. 
 
 Fuel delivery does not start as the bottleneck in this configuration, but after the early years the fleet size begins to move ahead of the fuel delivery rate.
 
@@ -91,19 +89,19 @@ Of course, this assumes:
 	•	The LEO depot can keep up with tanker deliveries
 	•	Launches and landings proceed without catastrophic failures
 
-But under these conditions, the model suggests that a city-scale scientific settlement on Mars is achievable in a little over a decade.
+These are likely vastly inflated numbers as production lines don't just poof into existence. In all reality the first few launches will see a trickle of ships as technologies need to be developed and tested before a full scale settlement effort can begin. But under these conditions, the model suggests that a city-scale scientific settlement on Mars is achievable in a little over a decade.
 
-Elon Musk has stated the goal is to produce 1,000 Starships per year. Given that the current lead time for a Falcon 9 is estimated at 12–18 months, this goal might seem fantastical. But SpaceX has a history of compressing timelines that once seemed impossible. For this simulation, I assumed an approximate tenfold increase over Falcon 9’s production rate—roughly one Starship per month per line. This is still speculative, but within the realm of engineering plausibility.
+Elon Musk has stated the goal is to produce 1,000 Starships per year. Given that the current lead time for a Falcon 9 is estimated at 12-18 months, this goal might seem fantastical. But SpaceX has a history of compressing timelines that once seemed impossible. The amount of advanced manufacturing experience and talent Elon Musk has access to at friendly companies like Tesla is likely to be a accelerant to this goal. For this simulation, I assumed an approximate tenfold increase over Falcon 9’s production rate, roughly one Starship per month per line. This is still speculative, but within the realm of engineering plausibility.
 
-These figures are based on what I believe to be reasonable first-pass assumptions. But different parameters will absolutely produce different results—so try your own. The simulator is yours to explore.
+These figures are based on what I believe to be reasonable first-pass assumptions. But different parameters will absolutely produce different results, so try your own. **[The simulator is yours to explore →](/fleet-simulator/)**
 
 ⸻
 
-A Crucible, Not a Colony
+A Crucible for Human Progress
 
-Once the floodgates of a functioning base are open—and the nature of the frontier drives invention—capital will begin to flow to Mars. As markets recognize the immense growth potential of not just Mars but a linked, solar system–wide economy, we’ll see the beginnings of an off-world industrial backbone.
+Once the floodgates of a functioning base are open—and the nature of the frontier drives invention—capital will begin to flow to Mars. As markets recognize the immense growth potential of not just Mars but a linked, solar system-wide economy, we’ll see the beginnings of an off-world industrial backbone.
 
-At this point, it’s fair to ask: doesn’t this sound a lot like the classic capitalist-imperialist extractive colonization that reached its zenith in the early 20th century?
+At this point, it’s fair to ask: doesn’t this sound a lot like the classic imperialistic extractive colonization that reached its zenith in the early 20th century?
 
 I think that’s a reasonable concern. But I also think this is different.
 
