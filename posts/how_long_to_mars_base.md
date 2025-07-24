@@ -95,6 +95,8 @@ But under these conditions, the model suggests that a city-scale scientific sett
 
 Elon Musk has stated the goal is to produce 1,000 Starships per year. Given that the current lead time for a Falcon 9 is estimated at 12–18 months, this goal might seem fantastical. But SpaceX has a history of compressing timelines that once seemed impossible. For this simulation, I assumed an approximate tenfold increase over Falcon 9’s production rate—roughly one Starship per month per line. This is still speculative, but within the realm of engineering plausibility.
 
+These figures are based on what I believe to be reasonable first-pass assumptions. But different parameters will absolutely produce different results—so try your own. The simulator is yours to explore.
+
 ⸻
 
 A Crucible, Not a Colony
