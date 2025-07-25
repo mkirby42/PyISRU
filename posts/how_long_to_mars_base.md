@@ -6,7 +6,7 @@ image: mars-bfrs.jpg
 
 Jim was excited for today. He’d been looking forward to the next series of resupply landings ever since the station had run out of ketchup four months ago. The food was never great at Musk Manor—what the inhabitants of the officially titled International Martian Advanced Research Station, or IMARS, called their home—but ketchup at least made the rations feel like food. Soon enough, the first of over 300 resupply ships would begin landing, and Jim would finally get his hands on some sweet, non-Newtonian tomato product.
 
-Jim is a researcher working on optimizing solar power generation. He hopes that, in addition to cementing IMARS as a permanent research station, his work will aid Earth’s transition to renewable energy and pave the way for other outposts to be established on other planets.
+Jim is a researcher focused on optimizing solar power generation. He hopes that, in addition to cementing IMARS as a permanent research station, his work will aid Earth’s transition to renewable energy, and pave the way for other outposts to be established on other planets.
 
 Research like Jim’s, done on Mars, is likely to accelerate and enable the further expansion of humanity into the solar system—while also driving the development of technologies useful here on Earth. The engineering and infrastructure needed to support a Martian outpost will form a blueprint for establishing ourselves on Venus, in the asteroid belt, and beyond. But how long will it actually take to establish a large scientific outpost on Mars?
 
@@ -49,8 +49,8 @@ The simulation tracks the system state over a 25-year window, using daily timest
 So… How Long Will It Take?
 
 Using a reasonable default configuration:
-	•	40 people per crew ship
-	•	100 tons of cargo per cargo ship
+	•	Each crew ship carries 40 people
+	•	Each cargo ship carries 100 tons of cargo
 	•	1 crew ship production line, 4 for cargo, 3 for tankers
 	•	Build times of 60 days (crew) and 30 days (cargo/tanker)
 	•	Fuel required per Mars mission: 1600 tons
@@ -60,9 +60,8 @@ Using a reasonable default configuration:
 
 …the simulation shows that we can transport 6,240 people and 123,900 tons of cargo to Mars in just six launch windows, or 12.8 years.
 
-That’s more than enough to establish a self-sufficient outpost with a crew of 5,000 and the necessary infrastructure. Even after accounting for retirement and replacement of aging ships, the system supports sustained growth at this scale.
+That’s more than enough to establish a self-sufficient outpost with a crew of 5,000 and the necessary infrastructure. Even after accounting for retirement and replacement of aging ships, the system supports sustained growth at this scale. In other words: with an ambitious but achievable production effort and a few hundred ships, a robust, continuously growing Martian base isn't just possible, it’s realistic.
 
-In other words: with a modestly scaled production effort and a few hundred ships, a robust, continuously growing Martian base is not just possible—it’s plausible.
 
 Here’s how the fleet grows across 25 years of continuous shipbuilding and launch window cycles:
 
@@ -71,7 +70,7 @@ Here’s how the fleet grows across 25 years of continuous shipbuilding and laun
 Figure 1: Available Fleet Size.
 Cargo ships (green) dominate the fleet composition due to their higher production line capacity and shorter build times. Crew ships (blue) grow more slowly, constrained by a single production line. Tankers (orange) cycle rapidly but stabilize at a relatively flat 35 ships, bounded by their mission lifespan.
 
-Notice the sharp drops in crew and cargo ship numbers every 780 days—these are the Mars launch windows, when available ships are dispatched en masse to Mars. The first launch window sees a fleet of 13 crew and 101 cargo ships using 182,400 tons of fuel. This initial group will transport 520 people and 10,100 tons of cargo to the Martian surface. By the sixth launch window the fleet has grown to 39 crew and 312 cargo ships using 561,600 tons of fuel. The first group of returning ships will need 182,400 tons of fuel to return to Earth. Splitting this in to the 3.54:1 ratio of oxygen to methane fuel ratios we get 142,100 t of LOX and 40,200 t of CH4. 
+Notice the sharp drops in crew and cargo ship numbers every 780 days—these are the Mars launch windows, when available ships are dispatched en masse to Mars. The first launch window sees a fleet of 13 crew and 101 cargo ships using 182,400 tons of fuel. This initial group will transport 520 people and 10,100 tons of cargo to the Martian surface. By the sixth launch window the fleet has grown to 39 crew and 312 cargo ships using 561,600 tons of fuel. The first group of returning ships will need 182,400 tons of fuel to return to Earth. Splitting this into the 3.54:1 oxygen-to-methane ratio yields approximately 142,100 tons of LOX and 40,200 tons of CH₄.
 
 Fuel delivery does not start as the bottleneck in this configuration, but after the early years the fleet size begins to move ahead of the fuel delivery rate.
 
@@ -89,9 +88,9 @@ Of course, this assumes:
 	•	The LEO depot can keep up with tanker deliveries
 	•	Launches and landings proceed without catastrophic failures
 
-These are likely vastly inflated numbers as production lines don't just poof into existence. In all reality the first few launches will see a trickle of ships as technologies need to be developed and tested before a full scale settlement effort can begin. But under these conditions, the model suggests that a city-scale scientific settlement on Mars is achievable in a little over a decade.
+These numbers are likely optimistic as production lines don't just poof into existence. In all reality the first few launches will see a trickle of ships as technologies need to be developed and tested before a full scale settlement effort can begin. But under these conditions, the model suggests that a city-scale scientific settlement on Mars is achievable in a little over a decade.
 
-Elon Musk has stated the goal is to produce 1,000 Starships per year. Given that the current lead time for a Falcon 9 is estimated at 12-18 months, this goal might seem fantastical. But SpaceX has a history of compressing timelines that once seemed impossible. The amount of advanced manufacturing experience and talent Elon Musk has access to at friendly companies like Tesla is likely to be a accelerant to this goal. For this simulation, I assumed an approximate tenfold increase over Falcon 9’s production rate, roughly one Starship per month per line. This is still speculative, but within the realm of engineering plausibility.
+Elon Musk has stated the goal is to produce 1,000 Starships per year. Given that the current lead time for a Falcon 9 is estimated at 12-18 months, this goal might seem fantastical. But SpaceX has a history of compressing timelines that once seemed impossible. The amount of advanced manufacturing experience and talent Elon Musk has access to at friendly companies like Tesla is likely to be an accelerant to this goal. For this simulation, I assumed an approximate tenfold increase over Falcon 9’s production rate, roughly one Starship per month per line. This is still speculative, but within the realm of engineering plausibility.
 
 These figures are based on what I believe to be reasonable first-pass assumptions. But different parameters will absolutely produce different results, so try your own. **[The simulator is yours to explore →](/fleet-simulator/)**
 
