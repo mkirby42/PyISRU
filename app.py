@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask_caching import Cache
 from markdown2 import markdown
 from pathlib import Path
 import yaml
@@ -7,6 +8,11 @@ import json
 from datetime import datetime
 
 app = Flask(__name__)
+
+# Configure caching
+app.config['CACHE_TYPE'] = 'SimpleCache'
+app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # 5 minutes
+cache = Cache(app)
 
 # Import the separate simulation modules
 from isru_simulation import isru_manager
@@ -17,7 +23,7 @@ fleet_dash_app = create_fleet_dash_app(app)
 
 POSTS_DIRECTORY = "posts"
 
-
+@cache.memoize(timeout=600)  # Cache for 10 minutes
 def load_posts():
     def load_markdown_post(filename):
         filepath = Path(POSTS_DIRECTORY) / f"{filename}.md"
@@ -83,14 +89,16 @@ def load_posts():
     return posts
 
 
-
 @app.route("/")
+@cache.cached(timeout=300)  # Cache homepage for 5 minutes
 def index():
     posts = load_posts()
-    return render_template("index.html", posts=posts)
+    response = render_template("index.html", posts=posts)
+    return response
 
 
 @app.route("/post/<filename>")
+@cache.cached(timeout=600)  # Cache individual posts for 10 minutes
 def post(filename):
     filepath = Path(POSTS_DIRECTORY) / f"{filename}.md"
     if not filepath.exists():
@@ -123,8 +131,6 @@ def images(filename):
 @app.route("/dashboard")
 def dashboard():
     return render_template("dashboard.html")
-
-
 
 @app.route("/api/run_simulation", methods=["POST"])
 def run_simulation():
