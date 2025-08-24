@@ -106,3 +106,9 @@ I think that’s a reasonable concern. But I also think this is different.
 This isn’t a resurrection of imperial capitalism. It’s the continuation of human progress that began when our ancestors first stepped out of Africa. It’s tempting to draw a straight line between this project and Earth’s painful history of extractive colonization. But this is something else, not a conquest, but an expansion of possibility. The goal isn’t plunder, it’s participation. Not domination, but discovery.
 
 Mars is not a colony it’s a crucible. The logistical challenges of building a Martian research base are immense, but not insurmountable. Not with reusable rockets. Not with well-engineered ISRU. Not with the kind of ambition Space X has made demonstrated. A city on Mars is no longer science fiction. It’s a supply chain problem, and supply chains can be solved.
+
+⸻
+Addendum
+
+My friend [Gerrit Bruhaug](https://x.com/GBruhaug) noted that the sheer scale of methane required to fuel fleets of this size could be significant enough to influence global markets and drive up prices. While I don’t see this as a limiting factor, I’ve added parameters to the simulation to allow methane price to be adjusted. I've also split the monolithic fuel parameter into individual LOX and methane parameters.
+
