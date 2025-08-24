@@ -112,3 +112,4 @@ Addendum
 
 My friend [Gerrit Bruhaug](https://x.com/GBruhaug) noted that the sheer scale of methane required to fuel fleets of this size could be significant enough to influence global markets and drive up prices. While I don’t see this as a limiting factor, I’ve added parameters to the simulation to allow methane price to be adjusted. I've also split the monolithic fuel parameter into individual LOX and methane parameters.
 
+
