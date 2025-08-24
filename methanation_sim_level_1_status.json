@@ -1,0 +1,324 @@
+{
+    "0": {
+        "time_elapsed": {
+            "value": 0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.5,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.5,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 50.0,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 0,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 0,
+            "units": "mole"
+        }
+    },
+    "5": {
+        "time_elapsed": {
+            "value": 5.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.5,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.5,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 7.5,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 2.5,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 5.0,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 2.5,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 2.5,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 5.0,
+            "units": "mole"
+        }
+    },
+    "10": {
+        "time_elapsed": {
+            "value": 10.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.5,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.5,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 5.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 30.0,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 5.0,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 5.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 20.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 5.0,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 10.0,
+            "units": "mole"
+        }
+    },
+    "15": {
+        "time_elapsed": {
+            "value": 15.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.5,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.5,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 2.5,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 20.0,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 7.5,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 15.0,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 7.5,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 30.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 7.5,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 15.0,
+            "units": "mole"
+        }
+    },
+    "20": {
+        "time_elapsed": {
+            "value": 20.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.5,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.5,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.0,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.0,
+            "units": "mole"
+        }
+    },
+    "25": {
+        "time_elapsed": {
+            "value": 25.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.5,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.5,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.0,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.0,
+            "units": "mole"
+        }
+    },
+    "30": {
+        "time_elapsed": {
+            "value": 30.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.5,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.5,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.0,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.0,
+            "units": "mole"
+        }
+    }
+}

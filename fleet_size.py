@@ -21,6 +21,12 @@ def simulate_mars_transport(params):
     leo_fuel_depot = []
     fuel_needed_for_fleet = []
     mars_fuel_demand = []
+    ch4_withdrawn_series = []
+    ch4_delivered_series = []
+    lox_withdrawn_series = []
+    lox_delivered_series = []
+    depot_ch4_series = []
+    depot_lox_series = []
     
     # Data for three separate tables
     production_data = []  # Quarterly production/fuel/fleet data
@@ -33,6 +39,8 @@ def simulate_mars_transport(params):
     quarter_cargo_completed = 0
     quarter_tanker_completed = 0
     quarter_fuel_delivered = 0
+    quarter_ch4_delivered = 0.0
+    quarter_lox_delivered = 0.0
     quarter_people_delivered = 0
     quarter_cargo_delivered = 0
     
@@ -41,6 +49,12 @@ def simulate_mars_transport(params):
     cargo_cumulative = 0
     depot_fuel = 0
     mars_fuel_cumulative = 0
+    ch4_withdrawn_cumulative = 0.0
+    ch4_delivered_cumulative = 0.0
+    lox_withdrawn_cumulative = 0.0
+    lox_delivered_cumulative = 0.0
+    depot_ch4 = 0.0
+    depot_lox = 0.0
     
     # Ship lifecycle tracking with mission counts
     crew_ships_fleet = []  # list of {'id': ship_id, 'missions': count}
@@ -54,6 +68,11 @@ def simulate_mars_transport(params):
     # Manufacturing tracking
     ships_under_construction = []  # list of {'type': 'crew'/'cargo'/'tanker', 'id': ship_id, 'completion_day': day}
     
+    # Propellant mixture
+    o_f_ratio = params.get("o_f_ratio", 3.6)
+    methane_mass_fraction = 1.0 / (1.0 + o_f_ratio)
+    oxygen_mass_fraction = 1.0 - methane_mass_fraction
+
     for day in range(0, total_simulation_days + 1):
         # Continuous manufacturing system
         
@@ -113,6 +132,7 @@ def simulate_mars_transport(params):
         cargo_ships_fleet = [ship for ship in cargo_ships_fleet if ship['missions'] < params["cargo_ship_lifespan"]]
         
         # Daily tanker operations - fly all ready tankers
+        active_tankers = 0
         if len(tankers_fleet) > 0:
             # Find tankers ready to fly (turnaround time has passed)
             ready_tankers = []
@@ -126,6 +146,22 @@ def simulate_mars_transport(params):
             daily_fuel_delivery = active_tankers * params["fuel_per_tanker"]
             depot_fuel += daily_fuel_delivery
             quarter_fuel_delivered += daily_fuel_delivery
+
+            # Methane accounting: delivered to depot is tanker cargo
+            methane_delivered_today = daily_fuel_delivery * methane_mass_fraction
+            ch4_delivered_cumulative += methane_delivered_today
+            depot_ch4 += methane_delivered_today
+            quarter_ch4_delivered += methane_delivered_today
+            # Methane withdrawn from Earth storage includes cargo loaded + tanker ascent burn
+            ch4_withdrawn_cumulative += methane_delivered_today + (active_tankers * params.get("tanker_ascent_ch4_tons", 0))
+
+            # LOX accounting: delivered to depot is tanker cargo (oxidizer fraction)
+            lox_delivered_today = daily_fuel_delivery * oxygen_mass_fraction
+            lox_delivered_cumulative += lox_delivered_today
+            depot_lox += lox_delivered_today
+            quarter_lox_delivered += lox_delivered_today
+            # LOX withdrawn includes cargo loaded + ascent LOX derived from CH4 ascent via O/F
+            lox_withdrawn_cumulative += lox_delivered_today + (active_tankers * params.get("tanker_ascent_ch4_tons", 0) * o_f_ratio)
             
             # Update flight records for tankers that flew
             for tanker in ready_tankers:
@@ -227,6 +263,9 @@ def simulate_mars_transport(params):
                 # Ships launched this window
                 fuel_used = (max_crew_ships * fuel_per_crew_ship) + (max_cargo_ships * fuel_per_cargo_ship)
                 depot_fuel -= fuel_used
+                # Reduce component inventories proportionally
+                depot_ch4 = max(0.0, depot_ch4 - fuel_used * methane_mass_fraction)
+                depot_lox = max(0.0, depot_lox - fuel_used * oxygen_mass_fraction)
                 
                 # Remove ships from available fleet and track them for return
                 launched_crew_ships = crew_ships_fleet[:max_crew_ships]
@@ -247,6 +286,18 @@ def simulate_mars_transport(params):
                 cargo_cumulative += cargo_delivered_this_window
                 quarter_people_delivered += people_delivered_this_window
                 quarter_cargo_delivered += cargo_delivered_this_window
+
+                # Methane accounting: ascent burns for crew/cargo launches are Earth withdrawals
+                ch4_withdrawn_cumulative += (
+                    max_crew_ships * params.get("crew_ascent_ch4_tons", 0)
+                    + max_cargo_ships * params.get("cargo_ascent_ch4_tons", 0)
+                )
+
+                # LOX accounting: ascent burns derived from O/F ratio
+                lox_withdrawn_cumulative += (
+                    (max_crew_ships * params.get("crew_ascent_ch4_tons", 0) * o_f_ratio)
+                    + (max_cargo_ships * params.get("cargo_ascent_ch4_tons", 0) * o_f_ratio)
+                )
                 
                 # Schedule ship returns (after full round trip)
                 return_day = day + mission_duration_days
@@ -277,7 +328,10 @@ def simulate_mars_transport(params):
                     "Crew Util %": f"{crew_util_pct:.0f}%",
                     "Cargo Util %": f"{cargo_util_pct:.0f}%",
                     "Limiting Factor": limiting_factor,
-                    "Fuel Used": f"{fuel_used:.0f}",
+                    "CH4 Used (t)": f"{(fuel_used * methane_mass_fraction):.0f}",
+                    "LOX Used (t)": f"{(fuel_used * oxygen_mass_fraction):.0f}",
+                    "Depot CH4 (t)": f"{depot_ch4:.0f}",
+                    "Depot LOX (t)": f"{depot_lox:.0f}",
                     "Ships Returning": ships_returning_today
                 })
 
@@ -297,6 +351,12 @@ def simulate_mars_transport(params):
         leo_fuel_depot.append(depot_fuel)
         fuel_needed_for_fleet.append(total_fleet_fuel_needed)
         mars_fuel_demand.append(mars_fuel_cumulative)
+        ch4_withdrawn_series.append(ch4_withdrawn_cumulative)
+        ch4_delivered_series.append(ch4_delivered_cumulative)
+        lox_withdrawn_series.append(lox_withdrawn_cumulative)
+        lox_delivered_series.append(lox_delivered_cumulative)
+        depot_ch4_series.append(depot_ch4)
+        depot_lox_series.append(depot_lox)
         
         # Quarterly reporting (every ~91 days)
         if day > 0 and day % 91 == 0 and day <= total_simulation_days:
@@ -314,12 +374,17 @@ def simulate_mars_transport(params):
                 "Crew Built": quarter_crew_completed,
                 "Cargo Built": quarter_cargo_completed,
                 "Tanker Built": quarter_tanker_completed,
-                "Fuel Delivered": f"{quarter_fuel_delivered:.0f}",
+                "CH4 Delivered (quarter, t)": f"{quarter_ch4_delivered:.0f}",
+                "LOX Delivered (quarter, t)": f"{quarter_lox_delivered:.0f}",
+                "CH4 Delivered (cumulative, t)": f"{ch4_delivered_cumulative:.0f}",
+                "LOX Delivered (cumulative, t)": f"{lox_delivered_cumulative:.0f}",
                 "Crew Fleet": len(crew_ships_fleet),
                 "Cargo Fleet": len(cargo_ships_fleet),
                 "Tanker Fleet": len(tankers_fleet),
                 "Building": crew_under_construction + cargo_under_construction + tanker_under_construction,
-                "Depot Fuel": f"{depot_fuel:.0f}"
+                "Depot Fuel": f"{depot_fuel:.0f}",
+                "Depot CH4 (current, t)": f"{depot_ch4:.0f}",
+                "Depot LOX (current, t)": f"{depot_lox:.0f}"
             })
             
             # Mars data
@@ -346,6 +411,8 @@ def simulate_mars_transport(params):
             quarter_cargo_completed = 0
             quarter_tanker_completed = 0
             quarter_fuel_delivered = 0
+            quarter_ch4_delivered = 0.0
+            quarter_lox_delivered = 0.0
             quarter_people_delivered = 0
             quarter_cargo_delivered = 0
 
@@ -358,7 +425,13 @@ def simulate_mars_transport(params):
         "Tankers Available": tankers_available,
         "LEO Fuel Depot": leo_fuel_depot,
         "Fuel Needed for Fleet": fuel_needed_for_fleet,
-        "Mars Fuel Demand": mars_fuel_demand
+        "Mars Fuel Demand": mars_fuel_demand,
+        "CH4 Withdrawn (tons)": ch4_withdrawn_series,
+        "CH4 Delivered to Depot (tons)": ch4_delivered_series,
+        "LOX Withdrawn (tons)": lox_withdrawn_series,
+        "LOX Delivered to Depot (tons)": lox_delivered_series,
+        "Depot CH4 current (tons)": depot_ch4_series,
+        "Depot LOX current (tons)": depot_lox_series
     })
     
     return df, production_data, operations_data, mars_data
@@ -511,6 +584,63 @@ app.layout = html.Div([
                               marks={i: str(i) for i in range(100, 2001, 500)},
                               tooltip={"placement": "bottom", "always_visible": False})
                 ], style={"marginBottom": "25px"}),
+
+                # Methane accounting controls
+                html.Div([
+                    html.H4("Methane Accounting", style={"color": "#7f8c8d", "fontSize": "1rem", "marginBottom": "15px"}),
+                    html.Label("O/F Ratio (LOX/CH4)", style={"fontWeight": "500", "color": "#2c3e50"}),
+                    dcc.Slider(2.5, 4.5, 0.1, value=3.75, id="o_f_ratio",
+                              marks={i: str(i) for i in [2.5, 3.0, 3.6, 3.75, 4.0, 4.5]},
+                              tooltip={"placement": "bottom", "always_visible": False}),
+                    html.Div(style={"height": "10px"}),
+                    html.Label("Methane Units", style={"fontWeight": "500", "color": "#2c3e50"}),
+                    dcc.Dropdown(id="methane_units",
+                                 options=[
+                                     {"label": "MMcf", "value": "mmcf"},
+                                     {"label": "tons", "value": "tons"},
+                                     {"label": "USD (millions)", "value": "usd"}
+                                 ],
+                                 value="mmcf",
+                                 clearable=False,
+                                 style={"marginTop": "5px", "marginBottom": "10px"}),
+                    html.Label("Henry Hub Price ($/MMBtu)", style={"fontWeight": "500", "color": "#2c3e50"}),
+                    dcc.Slider(1.0, 10.0, 0.1, value=2.69, id="methane_price_mmbtu",
+                              marks={i: str(i) for i in range(1, 11, 1)},
+                              tooltip={"placement": "bottom", "always_visible": False}),
+                    html.Div(style={"height": "10px"}),
+                    html.Label("Tanker Ascent CH4 per launch (tons)", style={"fontWeight": "500", "color": "#2c3e50"}),
+                    dcc.Slider(0, 2000, 10, value=1030, id="tanker_ascent_ch4_tons",
+                              marks={i: str(i) for i in [0, 500, 1000, 1500, 2000]},
+                              tooltip={"placement": "bottom", "always_visible": False}),
+                    html.Div(style={"height": "10px"}),
+                    html.Label("Crew Ascent CH4 per launch (tons)", style={"fontWeight": "500", "color": "#2c3e50"}),
+                    dcc.Slider(0, 2000, 10, value=1030, id="crew_ascent_ch4_tons",
+                              marks={i: str(i) for i in [0, 500, 1000, 1500, 2000]},
+                              tooltip={"placement": "bottom", "always_visible": False}),
+                    html.Div(style={"height": "10px"}),
+                    html.Label("Cargo Ascent CH4 per launch (tons)", style={"fontWeight": "500", "color": "#2c3e50"}),
+                    dcc.Slider(0, 2000, 10, value=1030, id="cargo_ascent_ch4_tons",
+                              marks={i: str(i) for i in [0, 500, 1000, 1500, 2000]},
+                              tooltip={"placement": "bottom", "always_visible": False}),
+                ], style={"marginBottom": "25px"}),
+
+                # LOX controls
+                html.Div([
+                    html.H4("LOX Accounting", style={"color": "#7f8c8d", "fontSize": "1rem", "marginBottom": "15px"}),
+                    html.Label("LOX Units", style={"fontWeight": "500", "color": "#2c3e50"}),
+                    dcc.Dropdown(id="lox_units",
+                                 options=[
+                                     {"label": "tons", "value": "tons"},
+                                     {"label": "USD (millions)", "value": "usd"}
+                                 ],
+                                 value="tons",
+                                 clearable=False,
+                                 style={"marginTop": "5px", "marginBottom": "10px"}),
+                    html.Label("LOX Price ($/ton)", style={"fontWeight": "500", "color": "#2c3e50"}),
+                    dcc.Slider(0, 2000, 50, value=500, id="lox_price_per_ton",
+                              marks={i: str(i) for i in range(0, 2001, 500)},
+                              tooltip={"placement": "bottom", "always_visible": False}),
+                ], style={"marginBottom": "25px"}),
             ]),
             
             # Lifespan Section
@@ -563,7 +693,9 @@ app.layout = html.Div([
                 dcc.Graph(id="cargo_graph", style={"marginBottom": "15px"}),
                 dcc.Graph(id="fleet_graph", style={"marginBottom": "15px"}),
                 dcc.Graph(id="fuel_depot_graph", style={"marginBottom": "15px"}),
-                dcc.Graph(id="mars_fuel_graph")
+                dcc.Graph(id="mars_fuel_graph"),
+                dcc.Graph(id="methane_graph"),
+                dcc.Graph(id="lox_graph")
             ], style={
                 "padding": "25px",
                 "backgroundColor": "#ffffff",
@@ -571,7 +703,8 @@ app.layout = html.Div([
                 "margin": "10px 10px 20px 10px",
                 "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
                 "height": "600px",
-                "overflowY": "auto"
+                "overflowY": "auto",
+                "overflowX": "hidden"
             }),
             
             # Three Data Tables Panel
@@ -594,12 +727,17 @@ app.layout = html.Div([
                             {"name": "Crew Built", "id": "Crew Built", "type": "numeric"},
                             {"name": "Cargo Built", "id": "Cargo Built", "type": "numeric"},
                             {"name": "Tanker Built", "id": "Tanker Built", "type": "numeric"},
-                            {"name": "Fuel Delivered", "id": "Fuel Delivered", "type": "text"},
+                            {"name": "CH4 Delivered (quarter, t)", "id": "CH4 Delivered (quarter, t)", "type": "text"},
+                            {"name": "LOX Delivered (quarter, t)", "id": "LOX Delivered (quarter, t)", "type": "text"},
+                            {"name": "CH4 Delivered (cumulative, t)", "id": "CH4 Delivered (cumulative, t)", "type": "text"},
+                            {"name": "LOX Delivered (cumulative, t)", "id": "LOX Delivered (cumulative, t)", "type": "text"},
                             {"name": "Crew Fleet", "id": "Crew Fleet", "type": "numeric"},
                             {"name": "Cargo Fleet", "id": "Cargo Fleet", "type": "numeric"},
                             {"name": "Tanker Fleet", "id": "Tanker Fleet", "type": "numeric"},
                             {"name": "Building", "id": "Building", "type": "numeric"},
-                            {"name": "Depot Fuel", "id": "Depot Fuel", "type": "text"}
+                            {"name": "Depot Fuel", "id": "Depot Fuel", "type": "text"},
+                            {"name": "Depot CH4 (current, t)", "id": "Depot CH4 (current, t)", "type": "text"},
+                            {"name": "Depot LOX (current, t)", "id": "Depot LOX (current, t)", "type": "text"}
                         ],
                         data=[],
                         style_table={"height": "300px", "overflowY": "auto", "borderRadius": "6px"},
@@ -634,7 +772,10 @@ app.layout = html.Div([
                             {"name": "Crew Util %", "id": "Crew Util %", "type": "text"},
                             {"name": "Cargo Util %", "id": "Cargo Util %", "type": "text"},
                             {"name": "Limiting Factor", "id": "Limiting Factor", "type": "text"},
-                            {"name": "Fuel Used", "id": "Fuel Used", "type": "text"},
+                            {"name": "CH4 Used (t)", "id": "CH4 Used (t)", "type": "text"},
+                            {"name": "LOX Used (t)", "id": "LOX Used (t)", "type": "text"},
+                            {"name": "Depot CH4 (t)", "id": "Depot CH4 (t)", "type": "text"},
+                            {"name": "Depot LOX (t)", "id": "Depot LOX (t)", "type": "text"},
                             {"name": "Ships Returning", "id": "Ships Returning", "type": "numeric"}
                         ],
                         data=[],
@@ -688,7 +829,8 @@ app.layout = html.Div([
                 "boxShadow": "0 2px 4px rgba(0,0,0,0.1)"
             })
         ], style={
-            "flex": "1"  # Right column takes remaining space
+            "flex": "1",  # Right column takes remaining space
+            "minWidth": "0"  # Allow flex item to shrink to container width
         })
     ], style={
         "padding": "0 20px 20px 20px",
@@ -705,7 +847,7 @@ app.layout = html.Div([
 })
 
 @app.callback(
-    [Output("people_graph", "figure"), Output("cargo_graph", "figure"), Output("fleet_graph", "figure"), Output("fuel_depot_graph", "figure"), Output("mars_fuel_graph", "figure"), Output("production_table", "data"), Output("operations_table", "data"), Output("mars_table", "data")],
+    [Output("people_graph", "figure"), Output("cargo_graph", "figure"), Output("fleet_graph", "figure"), Output("fuel_depot_graph", "figure"), Output("mars_fuel_graph", "figure"), Output("methane_graph", "figure"), Output("lox_graph", "figure"), Output("production_table", "data"), Output("operations_table", "data"), Output("mars_table", "data")],
     Input("n_people_per_ship", "value"),
     Input("cargo_mass_per_ship", "value"),
     Input("crew_build_time_months", "value"),
@@ -720,8 +862,16 @@ app.layout = html.Div([
     Input("crew_ship_lifespan", "value"),
     Input("cargo_ship_lifespan", "value"),
     Input("tanker_lifespan", "value"),
+    Input("o_f_ratio", "value"),
+    Input("methane_units", "value"),
+    Input("methane_price_mmbtu", "value"),
+    Input("tanker_ascent_ch4_tons", "value"),
+    Input("crew_ascent_ch4_tons", "value"),
+    Input("cargo_ascent_ch4_tons", "value"),
+    Input("lox_units", "value"),
+    Input("lox_price_per_ton", "value"),
 )
-def update_graphs(n_people, cargo_mass, crew_build_months, cargo_build_months, tanker_build_months, crew_capacity, cargo_capacity, tanker_capacity, tanker_turnaround_days, fuel_per_tanker, fuel_per_mission, crew_lifespan, cargo_lifespan, tanker_lifespan):
+def update_graphs(n_people, cargo_mass, crew_build_months, cargo_build_months, tanker_build_months, crew_capacity, cargo_capacity, tanker_capacity, tanker_turnaround_days, fuel_per_tanker, fuel_per_mission, crew_lifespan, cargo_lifespan, tanker_lifespan, o_f_ratio, methane_units, methane_price_mmbtu, tanker_ascent_ch4_tons, crew_ascent_ch4_tons, cargo_ascent_ch4_tons, lox_units, lox_price_per_ton):
     params = {
         "n_people_per_ship": n_people,
         "cargo_mass_per_ship": cargo_mass,
@@ -737,6 +887,10 @@ def update_graphs(n_people, cargo_mass, crew_build_months, cargo_build_months, t
         "crew_ship_lifespan": crew_lifespan,
         "cargo_ship_lifespan": cargo_lifespan,
         "tanker_lifespan": tanker_lifespan,
+        "o_f_ratio": o_f_ratio,
+        "tanker_ascent_ch4_tons": tanker_ascent_ch4_tons,
+        "crew_ascent_ch4_tons": crew_ascent_ch4_tons,
+        "cargo_ascent_ch4_tons": cargo_ascent_ch4_tons,
     }
     df, production_data, operations_data, mars_data = simulate_mars_transport(params)
 
@@ -909,9 +1063,77 @@ def update_graphs(n_people, cargo_mass, crew_build_months, cargo_build_months, t
         yaxis=dict(gridcolor='rgba(0,0,0,0.1)', showgrid=True),
         showlegend=False
     )
+
+    # Methane graph with units conversion
+    # Conversions
+    TONS_TO_MMCF = 0.0493
+    TON_TO_MMBTU = 52.6
+    if methane_units == "tons":
+        y1 = df["CH4 Withdrawn (tons)"]
+        y2 = df["CH4 Delivered to Depot (tons)"]
+        y_axis_title = "Cumulative CH4 (tons)"
+    elif methane_units == "mmcf":
+        y1 = df["CH4 Withdrawn (tons)"] * TONS_TO_MMCF
+        y2 = df["CH4 Delivered to Depot (tons)"] * TONS_TO_MMCF
+        y_axis_title = "Cumulative CH4 (MMcf)"
+    else:  # usd
+        y1 = df["CH4 Withdrawn (tons)"] * TON_TO_MMBTU * methane_price_mmbtu / 1e6
+        y2 = df["CH4 Delivered to Depot (tons)"] * TON_TO_MMBTU * methane_price_mmbtu / 1e6
+        y_axis_title = "Cumulative CH4 Cost (USD, millions)"
+
+    methane_fig = go.Figure()
+    methane_fig.add_trace(go.Scatter(
+        x=df["Year"], y=y1, name="CH4 Withdrawn (Earth)", line=dict(color="#16a085", width=3)
+    ))
+    methane_fig.add_trace(go.Scatter(
+        x=df["Year"], y=y2, name="CH4 Delivered to Depot", line=dict(color="#8e44ad", width=2, dash='dash')
+    ))
+    methane_fig.update_layout(
+        title={
+            'text': "Methane Withdrawn vs Delivered",
+            'x': 0.5,
+            'xanchor': 'center',
+            'font': {'size': 18, 'color': '#2c3e50', 'family': 'system-ui, -apple-system, sans-serif'}
+        },
+        xaxis_title="Year",
+        yaxis_title=y_axis_title,
+        margin=dict(l=60, r=30, t=60, b=50),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(family='system-ui, -apple-system, sans-serif', color='#2c3e50'),
+        xaxis=dict(gridcolor='rgba(0,0,0,0.1)', showgrid=True),
+        yaxis=dict(gridcolor='rgba(0,0,0,0.1)', showgrid=True),
+        legend=dict(x=0.02, y=0.98, bgcolor='rgba(255,255,255,0.8)', bordercolor='rgba(0,0,0,0.1)', borderwidth=1, font=dict(size=12))
+    )
+
+    # LOX graph (tons or USD millions)
+    if lox_units == "tons":
+        lox_y1 = df["LOX Withdrawn (tons)"]
+        lox_y2 = df["LOX Delivered to Depot (tons)"]
+        lox_yaxis = "Cumulative LOX (tons)"
+    else:
+        lox_y1 = df["LOX Withdrawn (tons)"] * (lox_price_per_ton / 1e6)
+        lox_y2 = df["LOX Delivered to Depot (tons)"] * (lox_price_per_ton / 1e6)
+        lox_yaxis = "Cumulative LOX Cost (USD, millions)"
+
+    lox_fig = go.Figure()
+    lox_fig.add_trace(go.Scatter(x=df["Year"], y=lox_y1, name="LOX Withdrawn (Earth)", line=dict(color="#2980b9", width=3)))
+    lox_fig.add_trace(go.Scatter(x=df["Year"], y=lox_y2, name="LOX Delivered to Depot", line=dict(color="#c0392b", width=2, dash='dash')))
+    lox_fig.update_layout(
+        title={'text': "LOX Withdrawn vs Delivered", 'x': 0.5, 'xanchor': 'center', 'font': {'size': 18, 'color': '#2c3e50', 'family': 'system-ui, -apple-system, sans-serif'}},
+        xaxis_title="Year",
+        yaxis_title=lox_yaxis,
+        margin=dict(l=60, r=30, t=60, b=50),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(family='system-ui, -apple-system, sans-serif', color='#2c3e50'),
+        xaxis=dict(gridcolor='rgba(0,0,0,0.1)', showgrid=True),
+        yaxis=dict(gridcolor='rgba(0,0,0,0.1)', showgrid=True),
+        legend=dict(x=0.02, y=0.98, bgcolor='rgba(255,255,255,0.8)', bordercolor='rgba(0,0,0,0.1)', borderwidth=1, font=dict(size=12))
+    )
     
     # Return table data for display
-    return people_fig, cargo_fig, fleet_fig, fuel_fig, mars_fuel_fig, production_data, operations_data, mars_data
+    return people_fig, cargo_fig, fleet_fig, fuel_fig, mars_fuel_fig, methane_fig, lox_fig, production_data, operations_data, mars_data
 
 if __name__ == "__main__":
     app.run(debug=True)
