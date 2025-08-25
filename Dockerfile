@@ -24,7 +24,8 @@ COPY . .
 
 # Create non-root user for security
 RUN adduser --disabled-password --gecos '' appuser && \
-    chown -R appuser:appuser /app
+    chown -R appuser:appuser /app && \
+    mkdir -p /data && chown -R appuser:appuser /data
 USER appuser
 
 EXPOSE 8000

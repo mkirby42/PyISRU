@@ -9,4 +9,153 @@
     <h1>{{ title }}</h1>
     {{ content | safe }}
 </div>
+
+{% if comments_enabled %}
+<section class="comments" data-slug="{{ filename }}">
+    <h2>Comments</h2>
+    <div id="comments-list"></div>
+    <form id="new-comment-form" class="comment-form">
+        <input type="text" name="author_name" placeholder="Name" required>
+        <input type="email" name="author_email" placeholder="Email (optional)">
+        <textarea name="content" rows="4" placeholder="Write a comment..." required></textarea>
+        <input type="text" name="website" style="display:none">
+        <button type="submit">Post Comment</button>
+    </form>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function(){
+  const section = document.querySelector('.comments');
+  if(!section) return;
+  const slug = section.getAttribute('data-slug');
+  const list = document.getElementById('comments-list');
+  const form = document.getElementById('new-comment-form');
+
+  function renderComment(c){
+    const div = document.createElement('div');
+    div.className = 'comment';
+    div.dataset.md = c.content_md || '';
+    const body = c.is_deleted ? '<em>Deleted by author</em>' : c.content_html;
+    div.innerHTML = `
+      <div class="comment-meta">
+        <span class="comment-author">${c.author_name || 'Anonymous'}</span>
+      </div>
+      <div class="comment-body">${body}</div>
+      <div class="comment-actions">
+        <button class="like-button" data-id="${c.id}">❤ ${c.like_count || 0}</button>
+        <button class="reply-button" data-id="${c.id}">Reply</button>
+        <button class="edit-button" data-id="${c.id}">Edit</button>
+        <button class="delete-button" data-id="${c.id}">Delete</button>
+      </div>
+      <div class="comment-replies"></div>
+    `;
+    const replies = div.querySelector('.comment-replies');
+    (c.replies||[]).forEach(r=>{
+      const rdiv = document.createElement('div');
+      rdiv.className = 'comment reply';
+      rdiv.innerHTML = `
+        <div class="comment-meta">
+          <span class="comment-author">${r.author_name || 'Anonymous'}</span>
+        </div>
+        <div class="comment-body">${r.is_deleted?'<em>Deleted by author</em>':r.content_html}</div>
+        <div class="comment-actions">
+          <button class="like-button" data-id="${r.id}">❤ ${r.like_count || 0}</button>
+          <button class="edit-button" data-id="${r.id}">Edit</button>
+          <button class="delete-button" data-id="${r.id}">Delete</button>
+        </div>
+      `;
+      rdiv.dataset.md = r.content_md || '';
+      replies.appendChild(rdiv);
+    });
+    return div;
+  }
+
+  function loadComments(){
+    fetch(`/comments/${slug}`).then(r=>r.json()).then(data=>{
+      list.innerHTML='';
+      data.comments.forEach(c=>list.appendChild(renderComment(c)));
+    });
+  }
+
+  list.addEventListener('click', function(e){
+    const likeBtn = e.target.closest('.like-button');
+    const replyBtn = e.target.closest('.reply-button');
+    const editBtn = e.target.closest('.edit-button');
+    const deleteBtn = e.target.closest('.delete-button');
+    if(likeBtn){
+      const id = likeBtn.getAttribute('data-id');
+      fetch(`/comments/${slug}/${id}/like`, {method:'POST'}).then(loadComments);
+    } else if(replyBtn){
+      const id = replyBtn.getAttribute('data-id');
+      const area = document.createElement('textarea');
+      area.rows = 3; area.placeholder = 'Write a reply...';
+      const submit = document.createElement('button');
+      submit.textContent = 'Reply';
+      const container = replyBtn.closest('.comment').querySelector('.comment-replies');
+      const formDiv = document.createElement('div');
+      formDiv.className = 'comment-form-inline';
+      formDiv.appendChild(area); formDiv.appendChild(submit);
+      container.prepend(formDiv);
+      submit.addEventListener('click', function(){
+        const fd = new FormData();
+        const name = prompt('Your name (shown):') || 'Anonymous';
+        fd.append('author_name', name);
+        fd.append('author_email', '');
+        fd.append('content', area.value);
+        fd.append('parent_id', id);
+        fetch(`/comments/${slug}`, {method:'POST', body: fd})
+          .then(r=>r.json())
+          .then(res=>{
+            if(res.error){ alert(res.error); return; }
+            if(res.edit_token && res.id){
+              localStorage.setItem('comment_edit_token_'+res.id, res.edit_token);
+            }
+            loadComments();
+          });
+      });
+    } else if(editBtn){
+      const id = editBtn.getAttribute('data-id');
+      const token = localStorage.getItem('comment_edit_token_'+id) || '';
+      const card = editBtn.closest('.comment');
+      const current = (card && card.dataset && card.dataset.md) ? card.dataset.md : '';
+      const newContent = prompt('Edit comment markdown:', current);
+      if(!newContent) return;
+      const fd = new FormData();
+      fd.append('edit_token', token);
+      fd.append('content', newContent);
+      fetch(`/comments/${slug}/${id}/edit`, {method:'POST', body: fd}).then(loadComments);
+    } else if(deleteBtn){
+      const id = deleteBtn.getAttribute('data-id');
+      const token = localStorage.getItem('comment_edit_token_'+id) || '';
+      const fd = new FormData();
+      fd.append('edit_token', token);
+      fetch(`/comments/${slug}/${id}/delete`, {method:'POST', body: fd}).then(loadComments);
+    }
+  });
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    const fd = new FormData(form);
+    if(!(fd.get('author_name')||'').trim()) fd.set('author_name','Anonymous');
+    fetch(`/comments/${slug}`, {method:'POST', body: fd})
+      .then(r=>r.json())
+      .then(res=>{
+        if(res.error){
+          alert(res.error);
+          return;
+        }
+        if(res.edit_token && res.id){
+          localStorage.setItem('comment_edit_token_'+res.id, res.edit_token);
+        }
+        form.reset();
+        loadComments();
+      });
+  });
+
+  loadComments();
+})();
+</script>
 {% endblock %}

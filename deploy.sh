@@ -41,9 +41,16 @@ else
     exit 1
 fi
 
-# Run flask app container
+# Ensure host comments directory exists
+COMMENTS_HOST_DIR="/srv/pyisru-comments"
+mkdir -p "$COMMENTS_HOST_DIR"
+
+# Run flask app container with comments volume
 echo -e "${YELLOW}Starting flask app container...${NC}"
-if docker run -d -p 8000:8000 --name flask-app --network flask-net pyisru; then
+if docker run -d -p 8000:8000 --name flask-app --network flask-net \
+    -e COMMENTS_DB_PATH=/data/comments.sqlite3 \
+    -v "$COMMENTS_HOST_DIR":/data \
+    pyisru; then
     echo -e "${GREEN}Flask app container started successfully${NC}"
 else
     echo -e "${RED}Failed to start flask app container${NC}"
