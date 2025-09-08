@@ -1,0 +1,1146 @@
+{
+    "0": {
+        "time_elapsed": {
+            "value": 0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "actual_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 50.0,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 0,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 0,
+            "units": "mole"
+        },
+        "initial_moles": {
+            "CO2": {
+                "value": 10.0,
+                "units": "mole"
+            },
+            "H2": {
+                "value": 50.0,
+                "units": "mole"
+            },
+            "CH4": {
+                "value": 0.0,
+                "units": "mole"
+            },
+            "H2O": {
+                "value": 0.0,
+                "units": "mole"
+            }
+        },
+        "A_pre_exponential": {
+            "value": 100000.0,
+            "units": "meter ** 12 / mole ** 4 / second"
+        },
+        "Ea": {
+            "value": 80000.0,
+            "units": "joule / mole"
+        },
+        "temperature": {
+            "value": 673.0,
+            "units": "kelvin"
+        },
+        "reactor_volume": {
+            "value": 0.1,
+            "units": "meter ** 3"
+        },
+        "k_T": {
+            "value": 0.06174560553525788,
+            "units": "meter ** 12 / mole ** 4 / second"
+        }
+    },
+    "5": {
+        "time_elapsed": {
+            "value": 5.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "actual_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.000000000000002,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "initial_moles": {
+            "CO2": {
+                "value": 10.0,
+                "units": "mole"
+            },
+            "H2": {
+                "value": 50.0,
+                "units": "mole"
+            },
+            "CH4": {
+                "value": 0.0,
+                "units": "mole"
+            },
+            "H2O": {
+                "value": 0.0,
+                "units": "mole"
+            }
+        },
+        "A_pre_exponential": {
+            "value": 100000.0,
+            "units": "meter ** 12 / mole ** 4 / second"
+        },
+        "Ea": {
+            "value": 80000.0,
+            "units": "joule / mole"
+        },
+        "temperature": {
+            "value": 673.0,
+            "units": "kelvin"
+        },
+        "reactor_volume": {
+            "value": 0.1,
+            "units": "meter ** 3"
+        },
+        "k_T": {
+            "value": 0.06174560553525788,
+            "units": "meter ** 12 / mole ** 4 / second"
+        }
+    },
+    "10": {
+        "time_elapsed": {
+            "value": 10.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "actual_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.000000000000002,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "initial_moles": {
+            "CO2": {
+                "value": 10.0,
+                "units": "mole"
+            },
+            "H2": {
+                "value": 50.0,
+                "units": "mole"
+            },
+            "CH4": {
+                "value": 0.0,
+                "units": "mole"
+            },
+            "H2O": {
+                "value": 0.0,
+                "units": "mole"
+            }
+        },
+        "A_pre_exponential": {
+            "value": 100000.0,
+            "units": "meter ** 12 / mole ** 4 / second"
+        },
+        "Ea": {
+            "value": 80000.0,
+            "units": "joule / mole"
+        },
+        "temperature": {
+            "value": 673.0,
+            "units": "kelvin"
+        },
+        "reactor_volume": {
+            "value": 0.1,
+            "units": "meter ** 3"
+        },
+        "k_T": {
+            "value": 0.06174560553525788,
+            "units": "meter ** 12 / mole ** 4 / second"
+        }
+    },
+    "15": {
+        "time_elapsed": {
+            "value": 15.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "actual_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.000000000000002,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "initial_moles": {
+            "CO2": {
+                "value": 10.0,
+                "units": "mole"
+            },
+            "H2": {
+                "value": 50.0,
+                "units": "mole"
+            },
+            "CH4": {
+                "value": 0.0,
+                "units": "mole"
+            },
+            "H2O": {
+                "value": 0.0,
+                "units": "mole"
+            }
+        },
+        "A_pre_exponential": {
+            "value": 100000.0,
+            "units": "meter ** 12 / mole ** 4 / second"
+        },
+        "Ea": {
+            "value": 80000.0,
+            "units": "joule / mole"
+        },
+        "temperature": {
+            "value": 673.0,
+            "units": "kelvin"
+        },
+        "reactor_volume": {
+            "value": 0.1,
+            "units": "meter ** 3"
+        },
+        "k_T": {
+            "value": 0.06174560553525788,
+            "units": "meter ** 12 / mole ** 4 / second"
+        }
+    },
+    "20": {
+        "time_elapsed": {
+            "value": 20.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "actual_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.000000000000002,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "initial_moles": {
+            "CO2": {
+                "value": 10.0,
+                "units": "mole"
+            },
+            "H2": {
+                "value": 50.0,
+                "units": "mole"
+            },
+            "CH4": {
+                "value": 0.0,
+                "units": "mole"
+            },
+            "H2O": {
+                "value": 0.0,
+                "units": "mole"
+            }
+        },
+        "A_pre_exponential": {
+            "value": 100000.0,
+            "units": "meter ** 12 / mole ** 4 / second"
+        },
+        "Ea": {
+            "value": 80000.0,
+            "units": "joule / mole"
+        },
+        "temperature": {
+            "value": 673.0,
+            "units": "kelvin"
+        },
+        "reactor_volume": {
+            "value": 0.1,
+            "units": "meter ** 3"
+        },
+        "k_T": {
+            "value": 0.06174560553525788,
+            "units": "meter ** 12 / mole ** 4 / second"
+        }
+    },
+    "25": {
+        "time_elapsed": {
+            "value": 25.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "actual_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.000000000000002,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "initial_moles": {
+            "CO2": {
+                "value": 10.0,
+                "units": "mole"
+            },
+            "H2": {
+                "value": 50.0,
+                "units": "mole"
+            },
+            "CH4": {
+                "value": 0.0,
+                "units": "mole"
+            },
+            "H2O": {
+                "value": 0.0,
+                "units": "mole"
+            }
+        },
+        "A_pre_exponential": {
+            "value": 100000.0,
+            "units": "meter ** 12 / mole ** 4 / second"
+        },
+        "Ea": {
+            "value": 80000.0,
+            "units": "joule / mole"
+        },
+        "temperature": {
+            "value": 673.0,
+            "units": "kelvin"
+        },
+        "reactor_volume": {
+            "value": 0.1,
+            "units": "meter ** 3"
+        },
+        "k_T": {
+            "value": 0.06174560553525788,
+            "units": "meter ** 12 / mole ** 4 / second"
+        }
+    },
+    "30": {
+        "time_elapsed": {
+            "value": 30.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "actual_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.000000000000002,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "initial_moles": {
+            "CO2": {
+                "value": 10.0,
+                "units": "mole"
+            },
+            "H2": {
+                "value": 50.0,
+                "units": "mole"
+            },
+            "CH4": {
+                "value": 0.0,
+                "units": "mole"
+            },
+            "H2O": {
+                "value": 0.0,
+                "units": "mole"
+            }
+        },
+        "A_pre_exponential": {
+            "value": 100000.0,
+            "units": "meter ** 12 / mole ** 4 / second"
+        },
+        "Ea": {
+            "value": 80000.0,
+            "units": "joule / mole"
+        },
+        "temperature": {
+            "value": 673.0,
+            "units": "kelvin"
+        },
+        "reactor_volume": {
+            "value": 0.1,
+            "units": "meter ** 3"
+        },
+        "k_T": {
+            "value": 0.06174560553525788,
+            "units": "meter ** 12 / mole ** 4 / second"
+        }
+    },
+    "35": {
+        "time_elapsed": {
+            "value": 35.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "actual_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.000000000000002,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "initial_moles": {
+            "CO2": {
+                "value": 10.0,
+                "units": "mole"
+            },
+            "H2": {
+                "value": 50.0,
+                "units": "mole"
+            },
+            "CH4": {
+                "value": 0.0,
+                "units": "mole"
+            },
+            "H2O": {
+                "value": 0.0,
+                "units": "mole"
+            }
+        },
+        "A_pre_exponential": {
+            "value": 100000.0,
+            "units": "meter ** 12 / mole ** 4 / second"
+        },
+        "Ea": {
+            "value": 80000.0,
+            "units": "joule / mole"
+        },
+        "temperature": {
+            "value": 673.0,
+            "units": "kelvin"
+        },
+        "reactor_volume": {
+            "value": 0.1,
+            "units": "meter ** 3"
+        },
+        "k_T": {
+            "value": 0.06174560553525788,
+            "units": "meter ** 12 / mole ** 4 / second"
+        }
+    },
+    "40": {
+        "time_elapsed": {
+            "value": 40.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "actual_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.000000000000002,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "initial_moles": {
+            "CO2": {
+                "value": 10.0,
+                "units": "mole"
+            },
+            "H2": {
+                "value": 50.0,
+                "units": "mole"
+            },
+            "CH4": {
+                "value": 0.0,
+                "units": "mole"
+            },
+            "H2O": {
+                "value": 0.0,
+                "units": "mole"
+            }
+        },
+        "A_pre_exponential": {
+            "value": 100000.0,
+            "units": "meter ** 12 / mole ** 4 / second"
+        },
+        "Ea": {
+            "value": 80000.0,
+            "units": "joule / mole"
+        },
+        "temperature": {
+            "value": 673.0,
+            "units": "kelvin"
+        },
+        "reactor_volume": {
+            "value": 0.1,
+            "units": "meter ** 3"
+        },
+        "k_T": {
+            "value": 0.06174560553525788,
+            "units": "meter ** 12 / mole ** 4 / second"
+        }
+    },
+    "45": {
+        "time_elapsed": {
+            "value": 45.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "actual_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.000000000000002,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "initial_moles": {
+            "CO2": {
+                "value": 10.0,
+                "units": "mole"
+            },
+            "H2": {
+                "value": 50.0,
+                "units": "mole"
+            },
+            "CH4": {
+                "value": 0.0,
+                "units": "mole"
+            },
+            "H2O": {
+                "value": 0.0,
+                "units": "mole"
+            }
+        },
+        "A_pre_exponential": {
+            "value": 100000.0,
+            "units": "meter ** 12 / mole ** 4 / second"
+        },
+        "Ea": {
+            "value": 80000.0,
+            "units": "joule / mole"
+        },
+        "temperature": {
+            "value": 673.0,
+            "units": "kelvin"
+        },
+        "reactor_volume": {
+            "value": 0.1,
+            "units": "meter ** 3"
+        },
+        "k_T": {
+            "value": 0.06174560553525788,
+            "units": "meter ** 12 / mole ** 4 / second"
+        }
+    },
+    "50": {
+        "time_elapsed": {
+            "value": 50.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "actual_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.000000000000002,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "initial_moles": {
+            "CO2": {
+                "value": 10.0,
+                "units": "mole"
+            },
+            "H2": {
+                "value": 50.0,
+                "units": "mole"
+            },
+            "CH4": {
+                "value": 0.0,
+                "units": "mole"
+            },
+            "H2O": {
+                "value": 0.0,
+                "units": "mole"
+            }
+        },
+        "A_pre_exponential": {
+            "value": 100000.0,
+            "units": "meter ** 12 / mole ** 4 / second"
+        },
+        "Ea": {
+            "value": 80000.0,
+            "units": "joule / mole"
+        },
+        "temperature": {
+            "value": 673.0,
+            "units": "kelvin"
+        },
+        "reactor_volume": {
+            "value": 0.1,
+            "units": "meter ** 3"
+        },
+        "k_T": {
+            "value": 0.06174560553525788,
+            "units": "meter ** 12 / mole ** 4 / second"
+        }
+    },
+    "55": {
+        "time_elapsed": {
+            "value": 55.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "actual_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.000000000000002,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "initial_moles": {
+            "CO2": {
+                "value": 10.0,
+                "units": "mole"
+            },
+            "H2": {
+                "value": 50.0,
+                "units": "mole"
+            },
+            "CH4": {
+                "value": 0.0,
+                "units": "mole"
+            },
+            "H2O": {
+                "value": 0.0,
+                "units": "mole"
+            }
+        },
+        "A_pre_exponential": {
+            "value": 100000.0,
+            "units": "meter ** 12 / mole ** 4 / second"
+        },
+        "Ea": {
+            "value": 80000.0,
+            "units": "joule / mole"
+        },
+        "temperature": {
+            "value": 673.0,
+            "units": "kelvin"
+        },
+        "reactor_volume": {
+            "value": 0.1,
+            "units": "meter ** 3"
+        },
+        "k_T": {
+            "value": 0.06174560553525788,
+            "units": "meter ** 12 / mole ** 4 / second"
+        }
+    },
+    "60": {
+        "time_elapsed": {
+            "value": 60.0,
+            "units": "second"
+        },
+        "rate_constant": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "current_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "actual_rate": {
+            "value": 0.0,
+            "units": "mole / second"
+        },
+        "moles_CO2": {
+            "value": 0.0,
+            "units": "mole"
+        },
+        "moles_H2": {
+            "value": 10.000000000000002,
+            "units": "mole"
+        },
+        "moles_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "moles_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "total_consumed_CO2": {
+            "value": 10.0,
+            "units": "mole"
+        },
+        "total_consumed_H2": {
+            "value": 40.0,
+            "units": "mole"
+        },
+        "total_produced_CH4": {
+            "value": 10.00000000000001,
+            "units": "mole"
+        },
+        "total_produced_H2O": {
+            "value": 20.00000000000002,
+            "units": "mole"
+        },
+        "initial_moles": {
+            "CO2": {
+                "value": 10.0,
+                "units": "mole"
+            },
+            "H2": {
+                "value": 50.0,
+                "units": "mole"
+            },
+            "CH4": {
+                "value": 0.0,
+                "units": "mole"
+            },
+            "H2O": {
+                "value": 0.0,
+                "units": "mole"
+            }
+        },
+        "A_pre_exponential": {
+            "value": 100000.0,
+            "units": "meter ** 12 / mole ** 4 / second"
+        },
+        "Ea": {
+            "value": 80000.0,
+            "units": "joule / mole"
+        },
+        "temperature": {
+            "value": 673.0,
+            "units": "kelvin"
+        },
+        "reactor_volume": {
+            "value": 0.1,
+            "units": "meter ** 3"
+        },
+        "k_T": {
+            "value": 0.06174560553525788,
+            "units": "meter ** 12 / mole ** 4 / second"
+        }
+    }
+}

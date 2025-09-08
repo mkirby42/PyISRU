@@ -8,11 +8,12 @@ pandas==2.2.3
 pyYAML==6.0.2
 scipy==1.14.1
 seaborn==0.13.2
-pint==0.22
+pint>=0.24.3,<0.25
 gunicorn==23.0.0
 plotly==6.2.0
 dash==3.1.1
 aiohttp==3.12.14
+imageio
 
 # Testing dependencies
 pytest==8.0.0

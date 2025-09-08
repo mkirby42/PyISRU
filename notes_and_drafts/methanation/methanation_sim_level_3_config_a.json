@@ -1,0 +1,19 @@
+{
+  "initial_moles": {
+    "CO2": 10.0,
+    "H2": 50.0,
+    "CH4": 0.0,
+    "H2O": 0.0
+  },
+  "reactor_volume_m3": 0.1,
+  "temperature_K": 673.0,
+  "pre_exponential": 100000.0,
+  "activation_energy_J_per_mol": 80000.0,
+  "volumetric_flow_rate_m3_per_s": 0.1,
+  "dt_seconds": 1.0,
+  "duration_seconds": 60,
+  "log_interval_seconds": 5,
+  "output_path": "./methanation_sim_level_3_config_a_results.json"
+}
+
+

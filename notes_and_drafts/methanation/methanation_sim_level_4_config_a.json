@@ -1,0 +1,33 @@
+{
+  "initial_moles": {
+    "CO2": 10.0,
+    "H2": 50.0,
+    "CH4": 0.0,
+    "H2O": 0.0
+  },
+  "reactor_volume_m3": 0.1,
+  "inlet_temperature_K": 673.0,
+  "inlet_pressure_Pa": 2000000.0,
+  "pre_exponential": 100000.0,
+  "activation_energy_J_per_mol": 80000.0,
+  "orders": [1.0, 4.0],
+  "product_orders": [1.0, 2.0],
+  "equilibrium_constant_ref": 1.0,
+  "equilibrium_T_ref_K": 298.15,
+  "volumetric_flow_rate_m3_per_s": 0.01,
+  "heat_of_reaction_J_per_mol": -165000.0,
+  "heat_capacity_J_per_mol_K": 35.0,
+  "overall_U_J_per_m2_s_K": 50.0,
+  "ambient_temperature_K": 210.0,
+  "porosity": 0.4,
+  "particle_diameter_m": 0.004,
+  "gas_viscosity_Pa_s": 2.5e-5,
+  "gas_density_kg_per_m3": 2.0,
+  "dt_seconds": 1.0,
+  "duration_seconds": 60,
+  "log_interval_seconds": 5,
+  "save_interval_seconds": 10,
+  "output_path": "./methanation_sim_level_4_config_a_results.json"
+}
+
+

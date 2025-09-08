@@ -153,6 +153,31 @@ def _sanitize_html(html: str) -> str:
     return cleaner.clean(html)
 
 
+# Preserve MathJax delimiters through markdown conversion
+def _protect_math_delimiters(text: str) -> str:
+    if not text:
+        return text
+    return (
+        text
+        .replace('\\(', '::MJX_INL_L::')
+        .replace('\\)', '::MJX_INL_R::')
+        .replace('\\[', '::MJX_DISP_L::')
+        .replace('\\]', '::MJX_DISP_R::')
+    )
+
+
+def _restore_math_delimiters(text: str) -> str:
+    if not text:
+        return text
+    return (
+        text
+        .replace('::MJX_INL_L::', '\\(')
+        .replace('::MJX_INL_R::', '\\)')
+        .replace('::MJX_DISP_L::', '\\[')
+        .replace('::MJX_DISP_R::', '\\]')
+    )
+
+
 # Initialize DB at startup
 _init_comments_db()
 
@@ -185,6 +210,10 @@ def load_posts():
             return metadata
         
     posts = []
+    
+    methanation_post = load_markdown_post("methanation")
+    posts.append(methanation_post)
+    
     mars_base_post = load_markdown_post("how_long_to_mars_base")
     posts.append(mars_base_post)
     
@@ -242,7 +271,9 @@ def post(filename):
         else:
             metadata = {"title": "Untitled", "image": ""}
         
-        html_content = markdown(content, extras=["fenced-code-blocks", "tables"])
+        _pre_md = _protect_math_delimiters(content)
+        html_content = markdown(_pre_md, extras=["fenced-code-blocks", "tables", "code-friendly"])
+        html_content = _restore_math_delimiters(html_content)
 
     response = make_response(
         render_template(
@@ -335,8 +366,9 @@ def create_comment(slug):
             return jsonify({"error": "Invalid parent"}), 400
 
     # Render and sanitize
-    content_html_raw = markdown(content_md, extras=["fenced-code-blocks", "tables"])
-    content_html = _sanitize_html(content_html_raw)
+    _pre_md = _protect_math_delimiters(content_md)
+    content_html_raw = markdown(_pre_md, extras=["fenced-code-blocks", "tables", "code-friendly"])
+    content_html = _sanitize_html(_restore_math_delimiters(content_html_raw))
 
     # Token for edit/delete
     edit_token = secrets.token_urlsafe(16)
@@ -400,8 +432,9 @@ def edit_comment(slug, comment_id):
     if not row or row[0] != token_hash:
         conn.close()
         return jsonify({"error": "Unauthorized"}), 403
-    content_html_raw = markdown(content_md, extras=["fenced-code-blocks", "tables"])
-    content_html = _sanitize_html(content_html_raw)
+    _pre_md = _protect_math_delimiters(content_md)
+    content_html_raw = markdown(_pre_md, extras=["fenced-code-blocks", "tables", "code-friendly"])
+    content_html = _sanitize_html(_restore_math_delimiters(content_html_raw))
     now = int(time.time())
     cur.execute(
         "UPDATE comments SET content_md=?, content_html=?, updated_at=? WHERE id=?",

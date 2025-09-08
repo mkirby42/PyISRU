@@ -29,6 +29,15 @@
 <script>
 (function(){
   const section = document.querySelector('.comments');
+  function typeset(container){
+    try {
+      if(window.MathJax && MathJax.typesetPromise){
+        MathJax.typesetPromise(container ? [container] : undefined);
+      }
+    } catch(e) {}
+  }
+  // Typeset main content on load
+  typeset(document.querySelector('.post-content'));
   if(!section) return;
   const slug = section.getAttribute('data-slug');
   const list = document.getElementById('comments-list');
@@ -77,6 +86,7 @@
     fetch(`/comments/${slug}`).then(r=>r.json()).then(data=>{
       list.innerHTML='';
       data.comments.forEach(c=>list.appendChild(renderComment(c)));
+      typeset(list);
     });
   }
 

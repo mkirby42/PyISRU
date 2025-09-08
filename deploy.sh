@@ -99,4 +99,16 @@ else
     exit 1
 fi
 
+# Run post-deploy load test
+echo -e "${YELLOW}Running post-deploy load test...${NC}"
+LOAD_TEST_URL="${LOAD_TEST_URL:-http://localhost:8000}"
+LOAD_TEST_USERS="${LOAD_TEST_USERS:-50}"
+LOAD_TEST_REQUESTS="${LOAD_TEST_REQUESTS:-500}"
+
+if [ -x ".venv/bin/python" ]; then
+    .venv/bin/python load_test.py --url "$LOAD_TEST_URL" --users "$LOAD_TEST_USERS" --requests "$LOAD_TEST_REQUESTS"
+else
+    echo -e "${RED}Error: .venv/bin/python not found. Skipping load test.${NC}"
+fi
+
 echo -e "${GREEN}🚀 Deployment completed successfully!${NC}" 
