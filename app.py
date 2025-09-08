@@ -16,6 +16,8 @@ import uuid
 import bleach
 from bleach.linkifier import LinkifyFilter
 from functools import partial
+from io import BytesIO
+from PIL import Image
 
 app = Flask(__name__)
 
@@ -23,6 +25,63 @@ app = Flask(__name__)
 app.config['CACHE_TYPE'] = 'SimpleCache'
 app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # 5 minutes
 cache = Cache(app)
+
+# Thumbnail configuration
+THUMB_ROOT = Path('static') / 'thumbs'
+THUMB_ROOT.mkdir(parents=True, exist_ok=True)
+
+def _thumb_path(src_relative: str, width: int) -> Path:
+    basename = os.path.basename(src_relative)
+    name, _ext = os.path.splitext(basename)
+    safe_name = name.replace('/', '_')
+    return THUMB_ROOT / f"{safe_name}_{width}.webp"
+
+def _open_image_abs(abs_path: Path) -> Image.Image:
+    with Image.open(abs_path) as img:
+        img.load()
+        return img.convert('RGB')
+
+@app.route('/thumb')
+def thumb():
+    """Generate/serve a cached WebP thumbnail for an image in static/images.
+
+    Query params:
+      src: relative path under static/images, e.g. 'its.png'
+      w: target width in px (int)
+    """
+    src = request.args.get('src', '').strip()
+    width_str = request.args.get('w', '400').strip()
+    try:
+        width = max(64, min(2000, int(width_str)))
+    except Exception:
+        width = 400
+
+    if not src or '..' in src or src.startswith('/'):
+        return 'bad src', 400
+
+    abs_src = Path('static') / 'images' / src
+    if not abs_src.exists():
+        return 'not found', 404
+
+    out_path = _thumb_path(src, width)
+    try:
+        if out_path.exists() and out_path.stat().st_mtime >= abs_src.stat().st_mtime:
+            return send_from_directory(str(out_path.parent), out_path.name, mimetype='image/webp')
+
+        img = _open_image_abs(abs_src)
+        w, h = img.size
+        if w > width:
+            ratio = width / float(w)
+            new_size = (width, int(h * ratio))
+            img = img.resize(new_size, Image.LANCZOS)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        img.save(out_path, 'WEBP', quality=82, method=6)
+        return send_from_directory(str(out_path.parent), out_path.name, mimetype='image/webp')
+    except Exception as e:
+        logging.exception(f"thumb error for {src} w={width}: {e}")
+        # Fallback to original
+        return send_from_directory('static/images', src)
+
 
 def _running_in_docker() -> bool:
     return os.path.exists('/.dockerenv') or os.environ.get('IN_DOCKER') == '1'

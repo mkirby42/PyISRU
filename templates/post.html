@@ -3,7 +3,12 @@
 <div class="post-content">
     {% if image %}
     <div class="post-image">
-        <img src="{{ url_for('static', filename='images/' + image) }}" alt="Image for {{ title }}">
+        <img 
+            alt="Image for {{ title }}"
+            loading="lazy"
+            src="{{ url_for('thumb') }}?src={{ image }}&w=960"
+            srcset="{{ url_for('thumb') }}?src={{ image }}&w=600 600w, {{ url_for('thumb') }}?src={{ image }}&w=960 960w, {{ url_for('thumb') }}?src={{ image }}&w=1280 1280w"
+            sizes="(max-width: 800px) 100vw, 800px">
     </div>
     {% endif %}
     <h1>{{ title }}</h1>

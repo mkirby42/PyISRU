@@ -14,7 +14,12 @@
     {% endif %}
         {% if post.image %}
         <div class="post-image">
-            <img src="{{ url_for('static', filename='images/' + post.image) }}" alt="{{ post.title }}">
+            <img 
+                alt="{{ post.title }}"
+                loading="lazy"
+                src="{{ url_for('thumb') }}?src={{ post.image }}&w=480"
+                srcset="{{ url_for('thumb') }}?src={{ post.image }}&w=360 360w, {{ url_for('thumb') }}?src={{ post.image }}&w=480 480w, {{ url_for('thumb') }}?src={{ post.image }}&w=720 720w"
+                sizes="(max-width: 600px) 100vw, 480px">
         </div>
         {% endif %}
         <div class="post-info">

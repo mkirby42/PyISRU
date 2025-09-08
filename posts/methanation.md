@@ -80,7 +80,7 @@ So we can now write the rate law for the reaction as:
 
 $$ r = k(T)\,C_{\mathrm{CO_2}}\,C_{\mathrm{H_2}}^{\,m} $$
 
-\(m\) is the reaction order w.r.t to \(\text{H}_2\). The reaction order signifies how sensitive the reaction is to the concentration of of the reactant. Often the best way to determine the reaction order is to perform a reaction rate experiment and use a fit to determine \(m\) as power law exponents like this vary with conditions and catalyst properties.
+\(m\) is the reaction order with respect to \(\text{H}_2\). It reflects how strongly the reaction rate depends on the hydrogen concentration. In practice, the value of m isn’t fixed—it’s usually determined experimentally by fitting reaction rate data, and can vary depending on the operating conditions and the catalyst used.
 
 For the concentration of each species we have a system of ODEs that looks like this:
 
@@ -96,15 +96,16 @@ In level three we introduce a reactor model: the Plug Flow Reactor. This is a co
 
 $$ \frac{dC_i}{dz} = \frac{\nu_i\, r(z)}{u} $$
 
-Where \(u\) is the velocity of the fluid in (m/s), where \(z\) is the axial position along the length of the reactor, and \(r(z)\) is the rate of the reaction at position \(z\). So stated simply the change in concentration of the \(i\)th species over the length of the reactor is equal to the rate of the reaction at position \(z\) divided by the velocity of the fluid.
+Where \(u\) is the velocity of the fluid in (m/s), \(z\) is the axial position along the length of the reactor, and \(r(z)\) is the rate of the reaction at position \(z\). So stated simply, the change in concentration of the \(i\)th species over the length of the reactor is equal to the rate of the reaction at position \(z\) divided by the velocity of the fluid.
 
-Modifying the simulation to use the PFR model we can say that the inputs are the feed concentrations \(C_i(0)\) and velocity \(u\). As fluid advances in space by \(dz\) species are consumed and produced according to the stoichiometric coefficient \(\nu_i\) and the rate law \(r(z)\). We solve the ODE along the length of the reactor to get the concentration profile at the outlet.
+In modifying the simulation to use the PFR model we can say that the model's inputs are the feed concentrations \(C_i(0)\) and velocity \(u\). 
+As fluid advances in space by \(dz\) species are consumed and produced according to the stoichiometric coefficient \(\nu_i\) and the rate law \(r(z)\). We solve the ODE along the length of the reactor to get the concentration profile at the outlet.
 
-This model isn't particularly realistic, but it's a good starting point for understanding the PFR model. The methanation reaction in particular suffers from isobaric, isothermal, and constant velocity assumptions.
+This model isn't particularly realistic, but it's a good starting point for understanding the PFR model. The methanation reaction in particular suffers from the isobaric, isothermal, and constant velocity assumptions.
 
 ## Level 4
 
-Level four removes the assumption of constant temperature, pressure, and velocity. This encourages us to restate the governing equations in terms of the molar flow rates \(F_i\) instead of the concentrations \(C_i\) removing the circular dependency between the velocity \(u\) and the pressure \(P\).
+Level four removes the assumption of constant temperature, pressure, and velocity. This encourages us to restate the governing equations in terms of the molar flow rates \(F_i\) instead of the concentrations \(C_i\) removing a circular dependency between the velocity \(u\) and the pressure \(P\) that would otherwise exist. Here is the new governing equation for the molar flow rates:
 
 $$ \frac{dF_i}{dz} = A \nu_i\, r(z) $$
 
@@ -113,27 +114,27 @@ Where \(F_i\) is the molar flow rate of the \(i\)th species at position \(z\), \
 Given this modification the inputs become the inlet molar flow rates \(F_i(0)\) pressure \(P(0)\) and temperature \(T(0)\).
 
 #### Modeling Pressure: The Ergun Equation:
-Given that methanation is a gas phase reaction it's important to consider how the velocity of the fluid changes along the length due to molar flow of the reactants and products of the reaction. Methanation must also take place in the presence of a catalyst (Ni or Ru are common) and this is often a packed bed of pellets. The presence of the catalyst creates drag of the fluid dropping the pressure of the fluid and altering its velocity. 
+Given that methanation is a gas phase reaction it's important to consider how the velocity of the fluid changes along the length due to molar flow of the reactants and products of the reaction. Methanation must also take place in the presence of a catalyst (Ni or Ru are common) and this is often a packed bed of pellets. The presence of the catalyst creates drag of the fluid dropping the pressure and altering its velocity. 
 
-The Ergun equation allows us to model \(dP/dz\) as a function of the velocity of the fluid \(u\), the viscosity of the fluid \(\mu\), the density of the fluid \(\rho\), the void fraction \(\varepsilon\), and the particle diameter \(d_p\).
+The Ergun equation allows us to model the pressure gradient \(dP/dz\) as a function of the velocity \(u\), the viscosity \(\mu\), the density \(\rho\) of the fluid as well as the void fraction \(\varepsilon\), and the particle diameter \(d_p\) of the packed bed.
 
 $$\frac{dP}{dz}=-\Bigg[\frac{150(1-\varepsilon)^2}{\varepsilon^3}\frac{\mu\,u}{d_p^2} \;+\; \frac{1.75(1-\varepsilon)}{\varepsilon^3}\frac{\rho\,u^2}{d_p}\Bigg]$$
 
-Where \(dP/dz\) is the pressure per unit length of the packed bed (Pa/m), \(\varepsilon\) is the void fraction (porosity) of the packed bed, \(\mu\) is the viscosity of the fluid, \(\rho\) is the density of the fluid, \(u\) is the velocity of the fluid, and \(d_p\) is the particle diameter (m).
+Where \(dP/dz\) is the pressure per unit length of the packed bed (Pa/m), \(\varepsilon\) is the void fraction (porosity) of the packed bed, \(\mu\) is the viscosity of the fluid, \(\rho\) is the density of the fluid, \(u\) is the velocity of the fluid, and \(d_p\) is the particle diameter (m) of the packed bed.
 
-The first term on the right-hand side (\(\frac{150(1-\varepsilon)^2}{\varepsilon^3}\frac{\mu\,u}{d_p^2}\)) represents the laminar flow resistance, while the second term (\(\frac{1.75(1-\varepsilon)}{\varepsilon^3}\frac{\rho\,u^2}{d_p}\)) represents the turbulent flow resistance.
+The first term on the right-hand side (\(\frac{150(1-\varepsilon)^2}{\varepsilon^3}\frac{\mu\,u}{d_p^2}\)) represents laminar flow resistance, while the second term (\(\frac{1.75(1-\varepsilon)}{\varepsilon^3}\frac{\rho\,u^2}{d_p}\)) represents turbulent flow resistance.
 
 It's worth noting that the \(u\) is the superficial velocity of the fluid, not the interstitial velocity. The interstitial velocity is the velocity of the fluid through the voids of the packed bed. The superficial velocity is the velocity of the fluid through the entire cross-sectional area of the reactor.
 
 #### Modeling Temperature: The Energy Balance Equation:
 
-It's also important to consider the energy balance of the reactor. The sabatier reaction is an exothermic reaction, meaning energy as heat is released as products are formed. This has effects on the local temperature of the reactor. We can model this with an energy balance equation.
+It's also important to consider the energy balance of the reactor. The sabatier reaction is an exothermic reaction, meaning energy (heat) is released as products are formed. This has effects on the local temperature of the reactor. We can model this with an energy balance equation.
 
 $$\frac{dT}{dz}=\frac{-\Delta H_r(T)\,r(z)\,A \;-\; U\,P_w\,[T(z)-T_\infty]}{\,F_\text{tot}(z)\,\bar C_p(z)}$$
 
 Where \(\Delta H_r(T)\) is the heat of reaction at temperature \(T\), \(r(z)\) is the rate of the reaction at position \(z\), \(A\) is the cross-sectional area of the reactor, \(U\) is the overall heat transfer coefficient, \(P_w\) is the perimeter of the reactor, \(T_\infty\) is the ambient temperature, \(F_\text{tot}(z)\) is the total molar flow rate at position \(z\), and \(\bar C_p(z)\) is the average heat capacity of the fluid at position \(z\). Note the negative sign on the heat of reaction indicating that the reaction is exothermic.
 
-Conceptually, the numerator contains (i) heat of reaction and (ii) heat exchange with the wall. The denominator contains the total heat capacity of the fluid at position \(z\).
+Conceptually, the numerator contains the heat of reaction on the left and heat exchange with the wall on the right. The denominator contains the total heat capacity of the fluid at position \(z\).
 
 #### Simulating the PFR
 
@@ -170,6 +171,8 @@ $$ r(z) = k(T)\,C_{\mathrm{CO_2}}\,C_{\mathrm{H_2}}^{\,m} $$
 ![Moles of Reactants and Products Over Time](../static/images/level_4_mass_flow.png)
 ![Moles of Reactants and Products Over Time](../static/images/level_4_temp_and_pressure.png)
 
+The results of the level 4 model are shown above. We can see a obvious rise in \(\text{CH}_4\) and \(\text{H}_2O\) product flow and temperature as we move from the inlet to the outlet of the reactor demonstrating the exothermic nature of the reaction.
+
 ```
 Residence time ≈ 0.054 s
 Outlet molar flow of CO2: 0.88 mol/s, 0.038832 g/s, 2.329937 g/min, 139.796235 g/h
@@ -181,6 +184,8 @@ Outlet stream percentage of H2: 72.94%
 Outlet stream percentage of CH4: 2.58%
 Outlet stream percentage of H2O: 5.15%
 ```
+
+This model, while more complex, is still a simplification of the real world. It doesn't account for the effectiveness of the catalyst, non-ideal gas behavior, side reactions, and other factors that would affect the reaction rate and product yield. However, it's a good starting point for understanding the methanation reaction and the challenges involved in modeling it. I plan to extend the model to include these factors in future posts.
 
 ## Appendix:
 #### Code for level 4

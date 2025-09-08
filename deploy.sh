@@ -41,8 +41,9 @@ else
     exit 1
 fi
 
-# Ensure host comments directory exists
-COMMENTS_HOST_DIR="/srv/pyisru-comments"
+# Ensure host comments directory exists (use a shared path by default)
+# Allow override via environment variable if the caller wants a custom host dir
+COMMENTS_HOST_DIR="${COMMENTS_HOST_DIR:-$HOME/pyisru-comments}"
 mkdir -p "$COMMENTS_HOST_DIR"
 
 # Run flask app container with comments volume

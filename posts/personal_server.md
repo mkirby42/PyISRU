@@ -12,7 +12,7 @@ But let’s be honest: it’s showing its age. It can’t run the latest macOS, 
 
 ## So… What Now?
 
-I currently pay about $15/month for an EC2 instance to host my personal blog (aka “please-hire-me” billboard). Being a cheapskate, saving that $15 sounded appealing. So I thought—why not turn the MacBook into a server?
+I currently pay about \\$15/month for an EC2 instance to host my personal blog (aka “please-hire-me” billboard). Being a cheapskate, saving that $15 sounded appealing. So I thought—why not turn the MacBook into a server?
 
 Sure, AWS probably makes better use of the grid than I can, and yes, keeping a decade-old MacBook plugged in 24/7 might not be the most energy-efficient move—but hey, it sounded fun. And that’s reason enough.
 

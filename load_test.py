@@ -24,7 +24,8 @@ async def load_test(base_url, concurrent_users, total_requests):
         f"{base_url}/post/how_long_to_mars_base",
         f"{base_url}/post/a_the_other_the_unknown_and_ourselves", 
         f"{base_url}/post/personal_server",
-        f"{base_url}/dashboard"
+        # The integrated Dash app is mounted at /fleet-simulator/
+        f"{base_url}/fleet-simulator/"
     ]
     
     semaphore = asyncio.Semaphore(concurrent_users)
