@@ -127,8 +127,8 @@ def create_fleet_dash_app(flask_app):
                         html.Label("Crew Line Capacity", style={"fontWeight": "500", "color": "#2c3e50"}),
                         html.P("Max crew ships building simultaneously. Production rate emerges from capacity × build time.", 
                                style={"fontSize": "12px", "color": "#95a5a6", "margin": "5px 0 10px 0"}),
-                        dcc.Slider(1, 30, 1, value=8, id="crew_line_capacity",
-                                  marks={i: str(i) for i in range(1, 31, 10)},
+                        dcc.Slider(1, 300, 5, value=8, id="crew_line_capacity",
+                                  marks={i: str(i) for i in range(1, 301, 50)},
                                   tooltip={"placement": "bottom", "always_visible": False})
                     ], style={"marginBottom": "20px"}),
                     
@@ -136,8 +136,8 @@ def create_fleet_dash_app(flask_app):
                         html.Label("Cargo Line Capacity", style={"fontWeight": "500", "color": "#2c3e50"}),
                         html.P("Max cargo ships building simultaneously", 
                                style={"fontSize": "12px", "color": "#95a5a6", "margin": "5px 0 10px 0"}),
-                        dcc.Slider(1, 50, 1, value=15, id="cargo_line_capacity",
-                                  marks={i: str(i) for i in range(1, 51, 15)},
+                        dcc.Slider(1, 500, 5, value=15, id="cargo_line_capacity",
+                                  marks={i: str(i) for i in range(1, 501, 100)},
                                   tooltip={"placement": "bottom", "always_visible": False})
                     ], style={"marginBottom": "20px"}),
                     
@@ -145,8 +145,8 @@ def create_fleet_dash_app(flask_app):
                         html.Label("Tanker Line Capacity", style={"fontWeight": "500", "color": "#2c3e50"}),
                         html.P("Max tanker ships building simultaneously", 
                                style={"fontSize": "12px", "color": "#95a5a6", "margin": "5px 0 10px 0"}),
-                        dcc.Slider(1, 50, 1, value=20, id="tanker_line_capacity",
-                                  marks={i: str(i) for i in range(1, 51, 15)},
+                        dcc.Slider(1, 500, 5, value=20, id="tanker_line_capacity",
+                                  marks={i: str(i) for i in range(1, 501, 100)},
                                   tooltip={"placement": "bottom", "always_visible": False})
                     ], style={"marginBottom": "25px"}),
                 ]),
@@ -168,8 +168,8 @@ def create_fleet_dash_app(flask_app):
                         html.Label("Fuel per Tanker (tons)", style={"fontWeight": "500", "color": "#2c3e50"}),
                         html.P("Fuel load carried by each tanker to LEO depot", 
                                style={"fontSize": "12px", "color": "#95a5a6", "margin": "5px 0 10px 0"}),
-                        dcc.Slider(10, 200, 10, value=100, id="fuel_per_tanker",
-                                  marks={i: str(i) for i in range(10, 201, 50)},
+                        dcc.Slider(10, 500, 10, value=100, id="fuel_per_tanker",
+                                  marks={i: str(i) for i in range(10, 501, 100)},
                                   tooltip={"placement": "bottom", "always_visible": False})
                     ], style={"marginBottom": "20px"}),
                     

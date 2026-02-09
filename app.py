@@ -241,7 +241,7 @@ def _restore_math_delimiters(text: str) -> str:
 _init_comments_db()
 
 
-from fleet_simulator import create_fleet_dash_app
+from fleet_sim import create_fleet_dash_app
 
 # Create integrated Dash app for fleet simulator
 fleet_dash_app = create_fleet_dash_app(app)
