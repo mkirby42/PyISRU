@@ -102,17 +102,17 @@ SLIDER_DEFS = {
     "crew_ship_lifespan": {
         "label": "Crew Ship Lifespan (missions)",
         "desc": "Mars round trips before retirement",
-        "min": 1, "max": 20, "step": 1, "default": 10,
+        "min": 1, "max": 100, "step": 1, "default": 10,
     },
     "cargo_ship_lifespan": {
         "label": "Cargo Ship Lifespan (missions)",
         "desc": "Mars round trips before retirement",
-        "min": 1, "max": 20, "step": 1, "default": 10,
+        "min": 1, "max": 100, "step": 1, "default": 10,
     },
     "tanker_lifespan": {
         "label": "Tanker Lifespan (missions)",
         "desc": "LEO fuel runs before retirement",
-        "min": 2, "max": 50, "step": 2, "default": 20,
+        "min": 2, "max": 500, "step": 2, "default": 20,
     },
 }
 

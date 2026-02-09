@@ -322,7 +322,6 @@ def build_layout():
                 html.Div(style={"width": "120px"}),
             ], fluid=True, className="d-flex align-items-center"),
             color="white",
-            light=True,
             className="mb-3 shadow-sm",
         ),
 
