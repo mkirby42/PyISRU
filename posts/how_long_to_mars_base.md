@@ -57,7 +57,7 @@ Using a reasonable default configuration:
 
 …the simulation shows that we can transport 6,240 people and 123,900 tons of cargo to Mars in just six launch windows, or 12.8 years.
 
-That’s more than enough to establish a self-sufficient outpost with a crew of 5,000 and the necessary infrastructure. Even after accounting for retirement and replacement of aging ships, the system supports sustained growth at this scale. In other words: with an ambitious but achievable production effort and a few hundred ships, a robust, continuously growing Martian base isn't just possible, it’s realistic.
+That’s more than enough to establish a self-sufficient outpost with a crew of 5,000 and the necessary infrastructure. Even after accounting for retirement and replacement of aging ships, the system supports sustained growth at this scale. In other words: with an ambitious but achievable production effort and a few hundred ships, a robust, continuously growing Martian base is quite realistic.
 
 
 Here’s how the fleet grows across 25 years of continuous shipbuilding and launch window cycles:
@@ -105,7 +105,7 @@ I think that’s a reasonable concern. But I also think this is different.
 
 This isn’t a resurrection of imperial capitalism. It’s the continuation of human progress that began when our ancestors first stepped out of Africa. It’s tempting to draw a straight line between this project and Earth’s painful history of extractive colonization. But this is something else, not a conquest, but an expansion of possibility. The goal isn’t plunder, it’s participation. Not domination, but discovery.
 
-Mars is not a colony it’s a crucible. The logistical challenges of building a Martian research base are immense, but not insurmountable. Not with reusable rockets. Not with well-engineered ISRU. Not with the kind of ambition Space X has made demonstrated. A city on Mars is no longer science fiction. It’s a supply chain problem, and supply chains can be solved.
+Mars isn't a colony it’s a crucible. The logistical challenges of building a Martian research base are immense, but not insurmountable. Not with reusable rockets. Not with well-engineered ISRU. Not with the kind of ambition Space X has demonstrated. A city on Mars is no longer science fiction. It’s a supply chain problem, and supply chains can be solved.
 
 ⸻
 Addendum

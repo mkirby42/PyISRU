@@ -16,7 +16,7 @@ We can encode the stoichiometric coefficients as a vector \(\nu\) like so:
 
 $$ \nu = (-1,\,-4,\,+1,\,+2). $$
 
-## Level 1
+## Level 1: Simple Stoichiometric Batch Model
 The first level of complexity is a simple stoichiometric batch model which assumes isothermal and isobaric conditions (that is constant temperature and pressure) and complete conversion of reactants. Essentially this simplifies the system to the level of a constant production volume per time step abstracting away the hairy details of the reactor, feed rates, and the environment. I think it's worth introducing the basic mathematical modeling at this early stage as it will help to demonstrate the effects of adding complexity to the model later.
 
 [comment]: <> (Introduce the governing differential equations, and the rate law)
@@ -51,7 +51,7 @@ But again I think it's worth exploring the results of a simulation using this ba
 
 Starting with 100g of \(\text{H}_2\) and 440g of \(\text{CO}_2\) we can see that at a constant rate of 0.5 mol/s, the reaction is complete after a bit more than 20 seconds as we run out of \(\text{CO}_2\). So at least in the context of this model \(\text{CO}_2\) is the limiting reactant and far more \(\text{H}_2O\) is produced (360g) than \(\text{CH}_4\) (160g). We consume 22g of \(\text{CO}_2\), 4g of \(\text{H}_2\), and produce 8g of \(\text{CH}_4\) and 18g of \(\text{H}_2O\) per second for a total of 160g of \(\text{CH}_4\) and 360g of \(\text{H}_2O\) with around 20g of \(\text{H}_2\) left over.
 
-## Level 2
+## Level 2: Batch Model with Kinetic Rate Law
 
 Level two introduces the Arrhenius equation to calculate the rate constant for the reaction. This increases the complexity of the model but allows more realistic modeling of reaction kinetics. This is similar to the initial $r(t) = r_0$ but we can actually use empirically derived values to calculate the rate constant leading to a more realistic model.
 
@@ -88,7 +88,7 @@ $$\frac{dC_i}{dt} = \nu_i\, r(t)$$
 
 As you can see this is the same as the level 1 model, showing that the only change is the rate law.
 
-## Level 3
+## Level 3: Plug Flow Reactor Model
 In level three we introduce a reactor model: the Plug Flow Reactor. This is a common model used in chemical engineering to design reactors.
 
 #### Modeling the Plug Flow Reactor (PFR):
@@ -103,7 +103,7 @@ As fluid advances in space by \(dz\) species are consumed and produced according
 
 This model isn't particularly realistic, but it's a good starting point for understanding the PFR model. The methanation reaction in particular suffers from the isobaric, isothermal, and constant velocity assumptions.
 
-## Level 4
+## Level 4: Molar Flow Rate Model with Pressure and Temperature Variations
 
 Level four removes the assumption of constant temperature, pressure, and velocity. This encourages us to restate the governing equations in terms of the molar flow rates \(F_i\) instead of the concentrations \(C_i\) removing a circular dependency between the velocity \(u\) and the pressure \(P\) that would otherwise exist. Here is the new governing equation for the molar flow rates:
 
@@ -186,6 +186,140 @@ Outlet stream percentage of H2O: 5.15%
 ```
 
 This model, while more complex, is still a simplification of the real world. It doesn't account for the effectiveness of the catalyst, non-ideal gas behavior, side reactions, and other factors that would affect the reaction rate and product yield. However, it's a good starting point for understanding the methanation reaction and the challenges involved in modeling it. I plan to extend the model to include these factors in future posts.
+
+## Level 5: Adding Reversibility and Side Reactions
+In a real world methanation reactor there are far more reactions occurring than just the \(\text{CO}_2\) methanation reaction. These include the water-gas shift and \(\text{CO}\) methanation. We will also want to account for reversibility of our reactions. For clarity let's write out each reaction we want to model.
+
+$$ \text{\(\text{CO}_2\) methanation} \quad \text{CO}_2 + \text{4H}_2 \rightleftharpoons \text{CH}_4 + \text{2H}_2O \quad (1) $$ 
+
+$$ \text{CO methanation} \quad \text{CO} + \text{3H}_2 \rightleftharpoons \text{CH}_4 + \text{H}_2O \quad (2) $$
+
+$$ \text{Water-gas shift} \quad \text{CO} + \text{H}_2O \rightleftharpoons \text{CO}_2 + \text{H}_2 \quad (3) $$
+
+We can represent these for our simulation in a matrix form where each row is species and each column is a reaction like so:
+
+$$ \nu = \begin{bmatrix}
+-1 & 0 & 1 \\
+-4 & -3 & 1 \\
+1 & 1 & 0 \\
+2 & 1 & -1 \\
+0 & -1 & -1 \\
+\end{bmatrix} $$
+
+So column 1 \([-1, -4, 1, 2, 0]\) represents the stoichiometric coefficients of reaction 1: the sabatier reaction (\(\text{CO}_2\) methanation). Whereas row 1 \([-1, 0, 1]\) represents the stoichiometric coefficients of species 1: \(\text{CO}_2\) in each reaction*.
+
+\**These would be column 0 and row 0 in the code due to zero based indexing.*
+
+This arrangement requires we modify our energy balance equation to account for the heat of reaction of each reaction.
+
+$$ \frac{dT}{dz} \;=\; \frac{\displaystyle A \sum_{j=1}^{R} \!(-\Delta H_j(T))\, r_j(z) \;-\; U P_w (T - T_\infty)}{F_\text{tot}\,\bar C_p} $$
+
+Where \(\Delta H_r(T)_j\) is the heat of reaction for the \(j\)th reaction at temperature \(T\), \(r_j\) is the rate of the \(j\)th reaction at position \(z\), and \(R\) is the number of reactions.
+
+The pressure drop \(\frac{dP}{dz}\) is the same as the level 4 model.
+
+#### Reaction Rates and Equilibrium Constants
+
+We also need to formulate reaction rates for each reaction. For the \(j\)th reaction we can model the reaction rate as follows:
+
+$$ r_j(z) = k_j(T) \phi_j(a) (1 - \frac{Q_j(a)}{K_j(T)})$$
+
+Where \(r_j(z)\) is the rate of the \(j\)th reaction at position \(z\).
+\(k_j(T)\) is the rate constant for the \(j\)th reaction at temperature \(T\). *(Arrhenius equation)*
+ \(\phi_j(a)\) is the forward activity dependence for the \(j\)th reaction. This is similar to the power law approach we've shown before in that it is an empirically derived value.
+
+For CO2 methanation we can model the forward activity dependence as follows:
+$$ \phi_1(a) = a_{\mathrm{CO_2}}^{\alpha_1} a_{\mathrm{H_2}}^{\beta_1} $$
+Where \(\alpha_1\) and \(\beta_1\) are the empirically fitted values for each species in reaction 1.
+\(a_i\) is the activity of the \(i\)th species. Using ideal gas assumptions:
+$$ a_i = \frac{y_i(z) P(z)}{P^\circ} $$
+
+Where \(y_i(z)\) is the mole fraction of the \(i\)th species at position \(z\) as a percentage. \(P^\circ\) is the standard pressure of 1 bar. \(P(z)\) is the pressure at position \(z\).
+
+\(Q_j(a)\) is the reaction quotient for the \(j\)th reaction. This uses stoichiometric coefficients.
+
+$$ Q_j(a) = \prod_{i}{a_i^{\nu_{i,j}}} $$
+
+or for CO2 methanation:
+
+$$ Q_1 = \frac{a_{\mathrm{CH_4}} a_{\mathrm{H_2O}}^2}{a_{\mathrm{CO_2}} a_{\mathrm{H_2}}^4} $$
+
+\(K_{pj}(T)\) is the equilibrium constant for the \(j\)th reaction at temperature \(T\). This is the ratio of product activities to reactant activities and essentially serves as a measure of the extent to which the reaction proceeds towards or away from equilibrium (where the reaction rate is zero and both forward and reverse rates are equal). At equilibrium \(r_j = 0\) and \(Q_j(a) = K_{pj}(T)\).
+
+$$ K_{pj}(T) = e^{-\frac{\Delta_{G_{r_j}^\circ(T)}}{RT}} $$
+
+With this we can write out the ODE for molar flow rates like so:
+
+$$ \frac{dF_i}{dz} = A (\nu \cdot r(z))_i $$
+
+## Level 6: Catalytic Surface Modeling
+Level six introduces a more complete treatment of the surface phenomena at the catalyst. Langmuir-Hinshelwood (L-H) kinetics captures the adsorption and desorption of the reactants and products on the catalyst surface. The essence of this model is that species absorb onto the catalyst and either amalgamate or dissociate to form surface species at a finite number of sites. I'll first describe the mechanistic details of the process and then discuss the modeling implications.
+
+#### Adsorption
+\(CO_2\) gas molecules from the input stream can come into contact with the Ni catalyst. Depending on the local thermal conditions the \(CO_2\) can undergo adsorption onto the catalyst in several different ways. The most desirable from our perspective would be a monodentate adsorption where the Carbons empty pi bonds are filled by the available electrons in the d orbital of the Ni atom. This is a likely occurrence at higher temperatures (>300 C), however, at lower temperatures the more energetically favorable outcome is a bidentate adsorption where one or both of the Oxygen atoms bond to the catalyst. 
+
+\(H_2\) gas molecules from the input stream undergo a similar adsorption process, but \(H_2\) gas dissociates almost immediately upon adsorption. The dissociated \(H\) atoms having a relatively small atomic mass are far more free to move about on the surface of the catalyst. This freedom of movement works to our advantage. 
+
+#### Dissociation
+With the occurrence the favorable monodentate case, the shifting of the electrons in the molecule weakens the Carbon's bonds to the Oxygen atoms, thereby decreasing the activation energy needed for the Oxygen to dissociate. The dissociation of one or both of the Oxygen atoms from the Carbon atom is once again a function of the local thermal conditions. In addition to this, dissociation is a function of the local geometry of the catalyst. Terraces, steps, and edges can all effect the probability of dissociation. In addition to these conditions high coverage rates of adjacent active sites can hinder dissociation through steric hindrance. It is often the case that the Dissociation the the Oxygen atoms happens as separate steps and not simultaneously. Dissociated Oxygen atoms typically reside as surface species strongly bound to the catalyst.
+
+Dissociated Oxygen atoms freed from their bonds to Carbon and undergo adsorption. When a freely moving hydrogen encounters and Oxygen atom hydrogenation is a likely occurrence. After two hydrogenations \(H_2O\) is formed and will freely undergo desorption from the catalyst. 
+
+#### Hydrogenation
+When the surface Carbon atom is visited by a traveling Hydrogen atom a hydrogenation is likely to occur. After three of these \(CH_3\) is formed and is only left singly bound to the Ni catalyst. One more subsequent hydrogenation event and \(CH_4\) is formed. \(CH_4\) having all the valence electrons engaged with Hydrogen atoms is no longer chemically bound to the catalyst and can easily undergo desorption. Intermediate hydrogenation steps have different adsorptions strengths. \(CH\) and \(CH_2\) are very strongly bound to the catalyst.
+
+#### Desorption
+Surface species of \(CH_4\) are only bound by weak Van der Waals forces and will readily desorb from the catalyst.
+
+At this point we face a choice. Should we keep axial position \(z\) as the independent variable or should we switch to catalyst mass \(m\)? For the sake of simplicity I'll keep \(z\) as the independent variable. Perhaps in a future post we can explore the use of catalyst mass as the independent variable.
+
+#### Langmuir-Hinshelwood
+While I did explore tracking each surface species independently using an internal non-linear solver, it was a bit of a mess and frankly I think too large of a complexity step for what I'm shooting for here. So I'll be using the single site Langmuir-Hinshelwood form. In this form we assume there is a single rate-limiting step that determines the overall reaction rate. Each gas has an equilibrium constant defining how much of the gas will adsorb to the surface. All reactants and products compete for a finite number of surface sites. Empty spots shrink as they are filled and only remaining empty spots are available for the rate-limiting step. We can define empty spots as \(\theta_*\) and describe this as follows:
+
+$$ \theta_* = \frac{1}{1 + \sum_i \tilde K_i a_i} $$
+
+We can compute reaction rate for \(CO_2\) methanation using the following equation. 
+
+$$ r = k(T)\,\frac{\tilde K_{CO_2}a_{CO_2}\,\tilde K_{H_2}a_{H_2}^{2}}{\big(1 + \tilde K_{CO_2}a_{CO_2} + \tilde K_{H_2}a_{H_2} + \tilde K_{CO}a_{CO} + \tilde K_{H_2O}a_{H_2O}\big)^m}\,\Big(1 - \tfrac{Q}{K_p(T)}\Big). $$
+
+$$ Q = \frac{a_{CH_4}a_{H_2O}^2}{a_{CO_2}a_{H_2}^4} $$
+
+Where the numerator is the products of activities and adsorption constants for the reactant species. 
+The denominator represents the competition for the surface sites and is the sum of the products of partial pressures and adsorption constants for other species present. \(m\) is the vacant site order, expressing the number of vacant sites required by the rate-limiting step.
+The result of this is multiplied by a driving force term \((1 - \tfrac{Q}{K_p(T)})\) ensuring the system respects thermodynamic equilibrium. Where \(Q\) is the reaction quotient and \(K_p(T)\) is the equilibrium constant at temperature \(T\).
+
+\(CO\) methanation:
+$$ r = k(T)\,\frac{\tilde K_{CO}a_{CO}\,\tilde K_{H_2}a_{H_2}^{3}}{\big(1 + \tilde K_{CO_2}a_{CO_2} + \tilde K_{H_2}a_{H_2} + \tilde K_{CO}a_{CO} + \tilde K_{H_2O}a_{H_2O}\big)^m}\,\Big(1 - \tfrac{Q}{K_p(T)}\Big). $$
+
+$$ Q = \frac{a_{CH_4}a_{H_2O}}{a_{CO}a_{H_2}^3} $$
+
+Water-gas shift reaction:
+$$ r = k(T)\,\frac{\tilde K_{CO}a_{CO}\,\tilde K_{H_2O}a_{H_2O}}{\big(1 + \tilde K_{CO_2}a_{CO_2} + \tilde K_{H_2}a_{H_2} + \tilde K_{CO}a_{CO} + \tilde K_{H_2O}a_{H_2O}\big)^m}\,\Big(1 - \tfrac{Q}{K_p(T)}\Big). $$
+
+$$ Q = \frac{a_{CO_2}a_{H_2}}{a_{CO}a_{H_2O}} $$
+
+Now I will introduce a couple new parameters regarding the catalyst. \(\Gamma\) and \(a_{\text{cat}}\). 
+
+\(\Gamma\) is the surface site density. This is the number of surface sites per unit area of catalyst in units of \(\text{mol sites} * m^{-2}\). 
+
+\(a_{\text{cat}}\) is the catalyst surface area per unit volume of reactor in units of \(m^2_{cat}/m^3_{bed}\).
+
+We can use these to compute the volumetric reaction rate for each reaction.
+$$ \dot{R}^{vol} = a_{\text{cat}}\,\Gamma\,r $$
+
+Next we can compute the net production rate \(\omega_i\) for each species.
+$$ \omega_i = \sum_{s=1}^{S} \nu_{i,s}\,\dot R_s^{(\text{vol})} $$
+
+And we can describe the molar flow using a familiar ODE.
+$$ \frac{dF_i}{dz} = A \omega_i $$
+
+#### Polymerization and Catalyst Poisoning
+Low \(H_2\) availability, high temperatures, carbon rich conditions, or slow hydrogenation can cause the surface Carbon to undergo polymerization and form graphitic structures on the catalyst. This will semi-permanently bind the carbon to the surface making the site unusable for further reactions. If enough of these event processes termed coke formation occur it can poison the catalyst and affect the output yields. We can model coke formation by adding a pseudo species \(\theta_{C}\) to the system that will adsorb to the catalyst surface and prevent further reactions.
+
+So far, this model assumes every molecule can instantly reach every active site and that the catalyst is uniformly at reactor temperature. Reality is a bit harsher: molecules must diffuse through pores in the catalyst body, heat builds up locally, and an actual reactor isn’t a perfect PFR without axial dispersion or radial gradients. Perhaps in a future post I can explore these effects, but I think I've covered enough for now.
+
+#### Level 6 Results
+
 
 ## Appendix:
 #### Code for level 4
