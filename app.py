@@ -75,7 +75,7 @@ def thumb():
             new_size = (width, int(h * ratio))
             img = img.resize(new_size, Image.LANCZOS)
         out_path.parent.mkdir(parents=True, exist_ok=True)
-        img.save(out_path, 'WEBP', quality=82, method=6)
+        img.save(out_path, 'WEBP', quality=90, method=6)
         return send_from_directory(str(out_path.parent), out_path.name, mimetype='image/webp')
     except Exception as e:
         logging.exception(f"thumb error for {src} w={width}: {e}")
@@ -269,6 +269,9 @@ def load_posts():
             return metadata
         
     posts = []
+
+    on_vibe_coding_post = load_markdown_post("on_vibe_coding")
+    posts.append(on_vibe_coding_post)
     
     methanation_post = load_markdown_post("methanation")
     posts.append(methanation_post)
